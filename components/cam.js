@@ -1,6 +1,32 @@
 AFRAME.registerComponent('cam', {
     init() {
 
+        
+/*AFRAME.registerComponent('cam', {
+    init() {
+        const camera = document.getElementById('camera');
+        let position = camera.getAttribute('position');
+
+        window.addEventListener('keydown', function (event) {
+            switch (event.code) {
+            case 'KeyW':
+                position.z -= 0.1;
+                break;
+            case 'KeyS':
+                position.z += 0.1;
+                break;
+            case 'KeyA':
+                position.x -= 0.1;
+                break;
+            case 'KeyD':
+                position.x += 0.1;
+                break;
+            }
+            camera.setAttribute('position', position);
+        });
+    }
+});
+*/
 
         //https://stackoverflow.com/questions/48434953/aframe-screen-to-world-position
         document.addEventListener('click', (e) => {
@@ -194,10 +220,9 @@ AFRAME.registerComponent('cam', {
         sceneEl.addEventListener('click', (e) => {
             // Skip if click was part of a selection box drag
             if (isSelecting) return;
+
             // 0 is left, 1 is middle, 2 is right
-            console.log(mouseButton);
             if (mouseButton !== 2) return;
-            
             
             // Only act if plane was clicked
             if (!e.target.classList.contains('clickable')) return;
@@ -214,7 +239,14 @@ AFRAME.registerComponent('cam', {
                 const targetX = dest.x + offsetX;
                 const targetZ = dest.z + offsetZ;
             
-                unit.components["unit"].moveTo(unit, { x: targetX, y: 0.5, z: targetZ });
+                
+                if (unit.components["unit"] != null) {
+                    unit.components["unit"].moveTo(unit, { x: targetX, y: 0.5, z: targetZ });
+                }
+                if (unit.components["character"] != null) {
+                    console.log("start running");
+                    unit.components["character"].startRunning('left');
+                }
                 //moveUnitTo(unit, { x: targetX, y: 0.5, z: targetZ });
             });
         });

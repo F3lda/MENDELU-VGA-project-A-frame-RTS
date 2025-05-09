@@ -1,86 +1,124 @@
 AFRAME.registerComponent('character', {
     init() {
-        console.log('Hello, you cube!');
+        console.log('Hello, character!');
+
+        this.directions = {
+            'back': new CANNON.Vec3(0, 0, 3),
+            'right': new CANNON.Vec3(3, 0, 0),
+            'front': new CANNON.Vec3(0, 0, -3),
+            'left': new CANNON.Vec3(-3, 0, 0),
+        }
 
         this.health = 100;
         this.collisionBodies = [];
+        this.velocity = null;
+        this.rotationY = 90;
+        this.direction = 'right';
+        this.characterModel = this.el.children[0];
 
         document.addEventListener('keydown', event => {
-            const pos = this.el.getAttribute('position')
-
             if (event.key === 'ArrowLeft') {
-                // apply a force in the physics system to move the character
-                this.el.body.applyImpulse(
-                    /* impulse */        new CANNON.Vec3(-10, 5, 0),
-                    /* world position */ new CANNON.Vec3(pos.x + 1, pos.y, pos.z)
-                )
-
+                this.startRunning('left');
             } else if (event.key === 'ArrowRight') {
-                // apply a force in the physics system to move the character
-                this.el.body.applyImpulse(
-                    /* impulse */        new CANNON.Vec3(10, 5, 0),
-                    /* world position */ new CANNON.Vec3(pos.x - 1, pos.y, pos.z)
-                )
+                this.startRunning('right');
+            } else if (event.key === 'ArrowUp') {
+                this.startRunning('front');
+            } else if (event.key === 'ArrowDown') {
+                this.startRunning('back');
             }
+            if (event.code === 'KeyR') {
+                var npcEl = this.el;//document.querySelector('#npc');
+                npcEl.setAttribute('nav-agent', {
+                    active: true,
+                    destination: '0 0 0'
+                });
+            }
+        })
+        document.addEventListener('keyup', () => this.stop())
+        this.el.addEventListener('collide', event => this.processCollision(event))
+    },
 
-            // grab the camera
-            var player = document.querySelector("a-camera")
-            // create a direction vector
-            var direction = new THREE.Vector3();
+    startRunning(direction) {
+        console.log("running");
+        const directions = Object.keys(this.directions);
+        let diff = directions.indexOf(direction) - directions.indexOf(this.direction);
+        diff = diff >= 3 ? diff - 4 : diff;
+        diff = diff <= -3 ? diff + 4 : diff;
 
-            if (e.code === "KeyR") {
-                // get the cameras world direction
-                this.el.sceneEl.camera.getWorldDirection(direction);
-                // multiply the direction by a "speed" factor
-                direction.multiplyScalar(0.1)
-                // get the current position
-                //var pos = player.getAttribute("position")
-                // add the direction vector
-                pos.add(direction)
-                // set the new position
-                player.setAttribute("position", pos);
-                // !!! NOTE - it would be more efficient to do the
-                // position change on the players THREE.Object:
-                // `player.object3D.position.add(direction)`
-                // but it would break "getAttribute("position")
-              }
+        this.rotationY += diff * 90;
+        this.direction = direction;
+        this.velocity = this.directions[direction];
+
+        // rotate the character to the correct direction of movement
+        this.characterModel.setAttribute('animation', {
+            property: 'rotation',
+            to: {x: 0, y: this.rotationY, z: 0},
+            dur: 500,
+            easing: 'easeOutQuad',
         })
 
-        this.el.addEventListener('collide', event => {
-            const otherEntity = event.detail.body;
+        // start the character's animation
+        this.characterModel.setAttribute('animation-mixer', {
+            clip: 'run',
+            crossFadeDuration: 0.2,
+        });
+    },
 
-            // consider only collisions with obstacles (entities having obstacle component)
-            if (!otherEntity.el.hasAttribute('obstacle')) {
-                return;
-            }
+    stop() {
+        // stop moving the object
+        this.velocity = null;
 
-            // do not collide repeatedly with the same entity
-            if (this.collisionBodies.includes(otherEntity)) {
-                return;
-            }
+        // stop the animation
+        this.characterModel.setAttribute('animation-mixer', {
+            clip: 'idle',
+            crossFadeDuration: 0.2,
+        });
+    },
 
-            // add the entity, which we collided with, to the array, so we can avoid another collision with the same entity
-            this.collisionBodies.push(otherEntity);
+    tick() {
+        if (this.velocity !== null) {
+            // constantly update the velocity of the character to the speed of the movement
+            // bypasses friction slowing down the character
+            // do not update Y to avoid interference with the physics gravity
+            this.el.body.velocity.x = this.velocity.x
+            this.el.body.velocity.z = this.velocity.z
+        }
+    },
 
-            // if there is a delay of at least 500ms between the collisions, enable collision with the same entity
-            // in other words: remove the collided entity from the array after 500ms if no other collisions happen in the meantime
-            clearTimeout(this.clearTimeout);
-            this.clearTimeout = setTimeout(() =>
-                this.collisionBodies.splice(this.collisionBodies.indexOf(otherEntity)),
-                500
-            );
+    processCollision(event) {
+        const otherEntity = event.detail.body;
 
-            // the collision affects the character's health
-            this.health -= 40;
-            console.log('Health', this.health)
+        // consider only collisions with obstacles (entities having obstacle component)
+        if (!otherEntity.el.hasAttribute('obstacle')) {
+            return;
+        }
 
-            // if there is no health remaining, the game is over
-            if (this.health < 0) {
-                document.getElementById('game-over').style.display = 'block';
-            }
+        // do not collide repeatedly with the same entity
+        if (this.collisionBodies.includes(otherEntity)) {
+            return;
+        }
 
-            // tell the other entity that the collision happened, so it can destroy itself
-            otherEntity.el.emit('collide-with-character')
-        })
-    }
+        // add the entity, which we collided with, to the array, so we can avoid another collision with the same entity
+        this.collisionBodies.push(otherEntity);
+
+        // if there is a delay of at least 500ms between the collisions, enable repeated collision with the same entity
+        // in other words: remove the collided entity from the array after 500ms if no other collisions happen in the meantime
+        clearTimeout(this.clearTimeout);
+        this.clearTimeout = setTimeout(() =>
+                this.collisionBodies.splice(0, this.collisionBodies.length),
+            500
+        );
+
+        // the collision affects the character's health
+        this.health -= 40;
+        console.log('Health', this.health)
+
+        // if there is no health remaining, the game is over
+        if (this.health < 0) {
+            //document.getElementById('game-over').style.display = 'block';
+        }
+
+        // tell the other entity that the collision happened, so it can destroy itself
+        otherEntity.el.emit('collide-with-character')
+    },
 });

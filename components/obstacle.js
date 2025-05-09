@@ -15,8 +15,10 @@ AFRAME.registerComponent('obstacle', {
             this.damage += 60;
 
             if (this.damage > this.data.strength && !this.hasBeenDestroyed) {
-                this.el.remove();
+                this.hasBeenDestroyed = true;
+                setTimeout(() => this.el.remove(), 0) // must remove the entity in the next frame to prevent error in physics system due to the collision still happening
             }
         })
-    }
+    },
+
 });
