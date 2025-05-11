@@ -29,8 +29,8 @@ AFRAME.registerComponent('cam', {
 */
 
         //https://stackoverflow.com/questions/48434953/aframe-screen-to-world-position
-        document.addEventListener('click', (e) => {
-            console.log(e.detail.intersectedEl);
+        /*document.addEventListener('click', (e) => {
+            console.log(e.detail.intersectedEl);*/
 
             /*let mouse = new THREE.Vector2()
             let camera = AFRAME.scenes[0].camera
@@ -68,7 +68,7 @@ AFRAME.registerComponent('cam', {
                   alert("JOP");
                 }*/
              //}
-          })
+          //})
 
 
 
@@ -132,7 +132,7 @@ AFRAME.registerComponent('cam', {
 
         let startX, startY, endX, endY;
         let isSelecting = false;
-            let selectedUnits = [];
+        let selectedUnits = [];
 
         document.addEventListener('mousedown', (e) => {
             if (e.button !== 0) return;
@@ -218,6 +218,10 @@ AFRAME.registerComponent('cam', {
         });
         
         sceneEl.addEventListener('click', (e) => {
+            
+            console.log("ON CLICK");
+            console.log(e.target);
+
             // Skip if click was part of a selection box drag
             if (isSelecting) return;
 
@@ -245,7 +249,7 @@ AFRAME.registerComponent('cam', {
                 }
                 if (unit.components["character"] != null) {
                     console.log("start running");
-                    unit.components["character"].startRunning('left');
+                    unit.components["character"].moveTo(unit, { x: targetX, y: 0.5, z: targetZ }, dest);
                 }
                 //moveUnitTo(unit, { x: targetX, y: 0.5, z: targetZ });
             });
