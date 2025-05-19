@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>RTS/FPS Game with Dynamic Minimap</title>
+    <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.5.4/dist/aframe-extras.min.js"></script>
+	
+    <style>
+      #minimap {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 200px;
+        height: 200px;
+        background: rgba(0, 0, 0, 0.5);
+        border: 2px solid white;
+        pointer-events: none;
+        z-index: 1000;
+      }
+	  
+		#overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        font-family: sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2em;
+        z-index: 10;
+        cursor: pointer;
+      }
+
+      #crosshair {
+		display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 10px;
+        height: 10px;
+        background: white;
+        border-radius: 50%;
+        margin-top: -5px;
+        margin-left: -5px;
+        z-index: 5;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+	<!-- Click overlay -->
+    <div id="overlay" onclick="startGame()">Click to Start</div>
+    <div id="crosshair"></div>
+	
+    <!-- Minimap iframe -->
+    <iframe id="minimap" src="minimap.html" width="200" height="200" style="position: absolute; top: 10px; right: 10px; border: 2px solid white; background: #000; pointer-events: none; z-index: 1000;"></iframe>
+
+    <a-scene cursor="rayOrigin: mouse" raycaster="objects: .selectable">
+      <!-- Ground -->
+      <a-plane id="ground" color="#7BC8A4" height="100" width="100" rotation="-90 0 0" class="clickable"></a-plane>
+
+      <!-- Sample Units -->
+      <a-box id="unit1" static-body class="selectable unit target" position="0 0.5 -5" color="tomato" unit-behavior></a-box>
+      <a-box id="unit2" static-body class="selectable unit target" position="2 0.5 -4" color="gold" unit-behavior></a-box>
+      <a-box id="enemy" static-body position="-4 0.5 -5" color="black"></a-box>
+	  
+	  <!-- Parent entity to group object and health bar -->
+      <a-entity id="enemy" position="0 0 -3">
+        
+        <!-- Object: box or 3D model -->
+        <a-box position="0 1 0" color="#4CC3D9" depth="1" height="1" width="1"></a-box>
+
+        <!-- Health bar group, positioned above the object -->
+        <a-entity position="0 2.1 0">
+          <!-- Background bar -->
+          <a-plane color="gray" width="1" height="0.1" position="0 0 0"></a-plane>
+
+          <!-- Foreground bar (dynamic health) -->
+          <a-plane id="health-bar" color="red" width="1" height="0.1" position="0 0 0.01"></a-plane>
+        </a-entity>
+
+      </a-entity>
+
+      <!-- FPS Camera -->
+	<a-entity
+		dynamic-body
+	  id="fps-camera"
+	  camera="active: false"
+	  look-controls="pointerLockEnabled: true"
+	  position="0 1.6 0"
+	  shootable
+	  wasd-controls
+	  visible="false"
+	>
+	  <!-- Gun -->
+	  <a-box
+		id="gun"
+		position="0.2 -0.2 -0.5"
+		rotation="0 -10 0"
+		width="0.2"
+		height="0.1"
+		depth="0.6"
+		color="gray"
+	  ></a-box>
+	</a-entity>
+
+      <!-- RTS Camera -->
+      <a-entity id="rts-camera" camera position="0 20 20" rotation="-45 0 0" wasd-controls></a-entity>
+
+      <!-- Directional Light -->
+      <a-light type="directional" intensity="0.6" position="0 20 10"></a-light>
+
+      <!-- Minimap Camera -->
+      <a-entity id="minimap-camera" camera position="0 50 0" rotation="-90 0 0" visible="false"></a-entity>
+
+      <!-- Components and Scripts -->
+      <script>
+        let selectedUnits = [];
+
+        AFRAME.registerComponent('unit-behavior', {
+          init: function () {
+            this.el.setAttribute('originalColor', this.el.getAttribute('color'));
+          },
+
+          tick: function () {
+            if (this.target) {
+              const current = this.el.object3D.position;
+              const dest = this.target;
+              const dx = dest.x - current.x;
+              const dz = dest.z - current.z;
+              const dist = Math.sqrt(dx * dx + dz * dz);
+
+              if (dist > 0.1) {
+                const step = 0.05;
+                this.el.object3D.position.x += (dx / dist) * step;
+                this.el.object3D.position.z += (dz / dist) * step;
+              }
+            }
+          },
+
+          moveTo: function (pos) {
+            this.target = pos;
+          }
+        });
+
+        // Manage FPS and RTS camera switching
+        //const fpscam = document.getElementById('fps-cam');
+        const fpsCam = document.getElementById('fps-camera');
+        const rtsCam = document.getElementById('rts-camera');
+        //const minimapCam = document.getElementById('minimap-camera');
+
+        document.addEventListener('keydown', function (event) {
+          const key = event.key.toLowerCase();
+
+          if (key === 'v') {
+            const isFPS = fpsCam.getAttribute('camera').active;
+            fpsCam.setAttribute('camera', 'active', !isFPS);
+            fpsCam.setAttribute('visible', !isFPS);
+            rtsCam.setAttribute('camera', 'active', isFPS);
+            rtsCam.setAttribute('visible', isFPS);
+			if (!isFPS) {
+				startGame();
+				document.getElementById("crosshair").style.display = 'block';
+			} else {
+				document.getElementById("crosshair").style.display = 'none';
+			}
+          }
+        });
+
+        // Sync positions between the main scene and the minimap
+        function syncMinimap() {
+          document.querySelectorAll('.unit').forEach((unit, i) => {
+            //const unitPos = unit.object3D.position;
+            const unitPos = unit.getAttribute('position');
+			//console.log(unitPos);
+			const minimap = document.getElementById('minimap').contentWindow.document.getElementById('minimap-unit-'+i);
+            const minimapUnit = minimap;
+			
+            //console.log(minimapUnit);
+            //console.log(unitPos.x);
+            //console.log(unitPos.z);
+            // Update minimap unit position
+			minimapUnit.setAttribute('position', unitPos.x+' 0.5 '+unitPos.z);
+            /*minimapUnit.setAttribute('position', {
+              x: unitPos.x,
+              y: 0.5, // Keep a fixed height for the minimap units
+              z: unitPos.z
+            });*/
+          });
+        }
+
+        // Call the sync function on each frame
+        setInterval(syncMinimap, 16);
+
+        // Update minimap camera position based on the main camera
+        function updateMinimap() {
+		  const minimapCam = document.getElementById('minimap').contentWindow.document.getElementById('minimapCam');
+		  const minimapPlayer = document.getElementById('minimap').contentWindow.document.getElementById('minimap-player');
+		  const isFPS = fpsCam.getAttribute('camera').active;
+		  
+          var mainCamPosition = fpsCam.getAttribute('position');
+          if(!isFPS) {
+			mainCamPosition = rtsCam.getAttribute('position');
+		  }
+		  minimapCam.setAttribute('position', mainCamPosition.x+' 50 '+mainCamPosition.z);
+		  minimapPlayer.setAttribute('position', mainCamPosition.x+' 0.5 '+mainCamPosition.z);
+		  //console.log("CAMOPOS");
+          /*minimapCam.setAttribute('position', {
+            x: mainCamPosition.x,
+            y: 50,  // Fixed height for the minimap camera
+            z: mainCamPosition.z
+          });*/
+        }
+
+        // Update minimap camera on each frame
+        setInterval(updateMinimap, 16);
+
+        // Ground click to move selected units
+        document.querySelector('a-scene').addEventListener('click', function (evt) {
+          const intersection = evt.detail.intersection;
+          if (!intersection) return;
+
+          const target = evt.target;
+
+          if (target.id === 'ground' && selectedUnits.length > 0) {
+            const point = intersection.point;
+            selectedUnits.forEach((unit, i) => {
+              const offset = (i % 3) - 1;
+              const dest = { x: point.x + offset, y: 0.5, z: point.z + Math.floor(i / 3) };
+              unit.components['unit-behavior'].moveTo(dest);
+            });
+          }
+        });
+		
+		     function startGame() {
+        document.getElementById("overlay").style.display = "none";
+        const scene = document.querySelector("a-scene");
+        const canvas = scene.canvas;
+        if (canvas.requestPointerLock) canvas.requestPointerLock();
+        canvas.focus();
+      }
+
+		AFRAME.registerComponent('do-something-once-loaded', {
+			schema: {dir: {default: ''}},
+		  init: function () {
+			// This will be called after the entity has properly attached and loaded.
+			const bullet = this.el;
+			// first move
+			const pos = bullet.getAttribute('position')
+			pos.add(this.data.dir)
+
+
+			bullet.addEventListener("collide", (e) => {
+			console.log("bullet collision");
+              const hitEl = e.detail.body.el;
+              if (hitEl && hitEl.classList.contains("target")) {
+                hitEl.setAttribute("color", "black"); // hit response
+                //setTimeout(() => hitEl.remove(), 500); // remove after hit
+              }
+              //bullet.remove(); // Remove bullet after collision
+			  setTimeout(() => bullet.remove(), 1);
+            });
+			
+			bullet.addEventListener("collisions", (e)=>{
+			  // collision!
+			  console.log("bullet collision");
+			})
+			
+			// movement
+			const intrvl = setInterval(() => {
+              pos.add(this.data.dir)
+            }, 20);
+
+            // Clean up bullet after timeout if no hit
+            setTimeout(() => {
+              if (bullet.parentNode) bullet.remove();
+			  clearInterval(intrvl);
+            }, 2000);
+		  }
+		});
+		
+		AFRAME.registerComponent('collider-check', {
+			dependencies: ['raycaster'],
+
+			init() {
+				this.el.addEventListener('raycaster-intersection', event => {
+					console.log('Bullet hit something! intersection', event.detail.els);
+				});
+			}
+		});
+
+
+      AFRAME.registerComponent("shootable", {
+        init: function () {
+          const camera = this.el;
+          const scene = camera.sceneEl;
+
+          window.addEventListener("click", function () {
+            // --- Muzzle Flash ---
+            const flash = document.createElement("a-sphere");
+            flash.setAttribute("radius", 0.05);
+            flash.setAttribute("color", "yellow");
+            flash.setAttribute("position", "0.25 -0.2 -0.9");
+            camera.appendChild(flash);
+            setTimeout(() => flash.remove(), 100);
+
+            // --- Bullet ---
+            const bullet = document.createElement("a-sphere");
+            bullet.setAttribute("radius", 0.1);
+            bullet.setAttribute("color", "black");
+
+            // Set bullet's starting position at camera
+            //const camPosition = camera.object3D.getWorldPosition(new THREE.Vector3());
+            const camPosition = camera.getAttribute('position');
+            //bullet.setAttribute("position", `${camPosition.x} ${camPosition.y} ${camPosition.z}`);
+			bullet.setAttribute('position', camera.getAttribute('position'));
+
+            // Add ammo.js rigid body
+            //bullet.setAttribute("ammo-body", "type: dynamic; mass: 0.1; shape: sphere");
+
+			bullet.setAttribute('static-body', 'mass: 0.1; shape: sphere;');
+			
+			
+			// Get camera's forward direction
+            const direction = new THREE.Vector3();
+            camera.object3D.getWorldDirection(direction);
+            direction.multiplyScalar(-0.3); // bullet speed
+
+            /*bullet.addEventListener("load", () => {
+			console.log("body-loaded");
+              bullet.body.velocity.set(direction.x, direction.y, direction.z);
+            });*/
+			console.log(camera.getAttribute("rotation").y);
+			
+			
+			bullet.setAttribute('collider-check', '');
+			bullet.setAttribute('rotation', camera.getAttribute("rotation"));
+			bullet.setAttribute('raycaster', 'objects: .target; showLine: true; far: 0.3;');
+			bullet.setAttribute('do-something-once-loaded', {dir: direction});
+			
+            scene.appendChild(bullet);
+			
+
+
+            /*// Get camera's forward direction
+            const direction = new THREE.Vector3();
+            camera.object3D.getWorldDirection(direction);
+            direction.multiplyScalar(20); // bullet speed
+
+            bullet.addEventListener("load", () => {
+			console.log("body-loaded");
+              bullet.body.velocity.set(direction.x, direction.y, direction.z);
+            });*/
+
+            // --- Bullet Collision Detection ---
+            /*bullet.addEventListener("collide", (e) => {
+              const hitEl = e.detail.body.el;
+              if (hitEl && hitEl.classList.contains("target")) {
+                hitEl.setAttribute("color", "black"); // hit response
+                setTimeout(() => hitEl.remove(), 500); // remove after hit
+              }
+              bullet.remove(); // Remove bullet after collision
+            });
+
+            // Clean up bullet after timeout if no hit
+            setTimeout(() => {
+              if (bullet.parentNode) bullet.remove();
+            }, 2000);*/
+          });
+        },
+      });
+      </script>
+    </a-scene>
+  </body>
+</html>

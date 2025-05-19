@@ -1,0 +1,70 @@
+<!DOCTYPE HTML>
+
+<head>
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+</head>
+
+<body>
+  <script>
+  //https://stackoverflow.com/questions/61944027/aframe-how-to-get-intersected-elements-from-raycaster-intersection-event
+  AFRAME.registerComponent('cursor-listener', {
+    init: function () {
+      this.el.addEventListener('raycaster-intersected', evt => {
+        this.raycaster = evt.detail.el;
+      });
+      this.el.addEventListener('raycaster-intersected-cleared', evt => {
+        this.raycaster = null;
+      });
+      
+      
+      //document.addEventListener('click', evt => {
+	  
+	  var pointStart = null;
+	  
+      document.addEventListener('mouseup', evt => {
+        if (!this.raycaster) { return; }  // Not intersecting.
+        let intersection = this.raycaster.components.raycaster.getIntersection(this.el);
+        if (!intersection) { return; } // Not intersecting
+        // intersecting
+        //console.log(intersection);
+		console.log("mouseup");
+        console.log(intersection.point);
+        console.log(pointStart);
+        //console.log(intersection.uv);
+      });
+	  
+	  document.addEventListener('mousedown', evt => {
+        if (!this.raycaster) { return; }  // Not intersecting.
+        let intersection = this.raycaster.components.raycaster.getIntersection(this.el);
+        if (!intersection) { return; } // Not intersecting
+        // intersecting
+        //console.log(intersection);
+        console.log("mousedown");
+        //console.log(intersection.point);
+		pointStart = intersection.point;
+        //console.log(intersection.uv);
+      });
+    },
+    /*tick: function () {
+        if (!this.raycaster) { return; }  // Not intersecting.
+        let intersection = this.raycaster.components.raycaster.getIntersection(this.el);
+        if (!intersection) { return; } // Not intersecting
+        // intersecting
+        console.log(intersection);
+    }*/
+  });
+  </script>
+  <a-scene id="scene">
+    <a-entity cursor="rayOrigin: mouse" raycaster="objects: .cursor-listener; showLine: true; lineColor: red;"></a-entity>
+    
+    <a-plane
+        position="0 1.6 -1"
+        height="2"
+        width="1.5"
+        color="red"
+        class="cursor-listener"
+        cursor-listener
+        id="element"
+      ></a-plane>
+  </a-scene>
+</body>

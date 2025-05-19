@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>RTS Unit Selection</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+      #selectionBox {
+        position: absolute;
+        border: 2px dashed #00f;
+        background-color: rgba(0, 0, 255, 0.2);
+        display: none;
+        pointer-events: none;
+        z-index: 100;
+      }
+    </style>
+  </head>
+  <body oncontextmenu="return false;">
+    <div id="selectionBox"></div>
+
+    <a-scene cursor="rayOrigin: mouse" raycaster="objects: .clickable">
+      <a-plane
+        class="clickable"
+        position="0 0 0"
+        rotation="-90 0 0"
+        width="30"
+        height="30"
+        color="#7BC8A4"
+      ></a-plane>
+
+      <!-- More Units -->
+      <a-box class="unit clickable" color="red" position="-4 0.5 -5" depth="1" height="1" width="1"></a-box>
+      <a-box class="unit clickable" color="red" position="-2 0.5 -5" depth="1" height="1" width="1"></a-box>
+      <a-box class="unit clickable" color="red" position="0 0.5 -5" depth="1" height="1" width="1"></a-box>
+      <a-box class="unit clickable" color="red" position="2 0.5 -5" depth="1" height="1" width="1"></a-box>
+      <a-box class="unit clickable" color="red" position="4 0.5 -5" depth="1" height="1" width="1"></a-box>
+
+      <!-- Add more units in different positions -->
+      <a-box class="unit clickable" color="red" position="-5 0.5 -7" depth="1" height="1" width="1"></a-box>
+      <a-box class="unit clickable" color="red" position="-3 0.5 -7" depth="1" height="1" width="1"></a-box>
+      <a-box class="unit clickable" color="red" position="-1 0.5 -7" depth="1" height="1" width="1"></a-box>
+      <a-box class="unit clickable" color="red" position="1 0.5 -7" depth="1" height="1" width="1"></a-box>
+      <a-box class="unit clickable" color="red" position="3 0.5 -7" depth="1" height="1" width="1"></a-box>
+
+      <a-entity light="type: ambient; color: #fff"></a-entity>
+      <a-entity
+        camera
+        wasd-controls
+        position="0 15 15"
+        rotation="-45 0 0"
+        look-controls="enabled: false"
+      ></a-entity>
+    </a-scene>
+
+    <script>
+      const selectionBox = document.getElementById('selectionBox');
+      const sceneEl = document.querySelector('a-scene');
+      const units = Array.from(document.querySelectorAll('.unit'));
+
+      let startX, startY, endX, endY;
+      let isSelecting = false;
+	    let selectedUnits = [];
+
+      document.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
+        isSelecting = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        selectionBox.style.left = startX + 'px';
+        selectionBox.style.top = startY + 'px';
+        selectionBox.style.width = '0px';
+        selectionBox.style.height = '0px';
+        selectionBox.style.display = 'block';
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isSelecting) return;
+        endX = e.clientX;
+        endY = e.clientY;
+
+        const left = Math.min(startX, endX);
+        const top = Math.min(startY, endY);
+        const width = Math.abs(startX - endX);
+        const height = Math.abs(startY - endY);
+
+        selectionBox.style.left = left + 'px';
+        selectionBox.style.top = top + 'px';
+        selectionBox.style.width = width + 'px';
+        selectionBox.style.height = height + 'px';
+      });
+
+      document.addEventListener('mouseup', () => {
+        if (!isSelecting) return;
+        isSelecting = false;
+
+        const rect = selectionBox.getBoundingClientRect();
+        selectedUnits = [];
+		
+        selectionBox.style.display = 'none';
+
+        units.forEach((unit) => {
+          const worldPos = unit.object3D.getWorldPosition(new THREE.Vector3());
+          const screenPos = worldToScreen(worldPos, sceneEl.camera);			
+
+          if (
+            screenPos.x >= rect.left &&
+            screenPos.x <= rect.right &&
+            screenPos.y >= rect.top &&
+            screenPos.y <= rect.bottom
+          ) {
+            selectedUnits.push(unit);
+            unit.setAttribute('color', 'yellow');
+          } else {
+            unit.setAttribute('color', 'red');
+          }
+        });
+
+        console.log('Selected units:', selectedUnits);
+      });
+
+      function worldToScreen(position, camera) {
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        const vector = new THREE.Vector3(position.x, position.y, position.z);
+        vector.project(camera);
+
+        return {
+          x: ((vector.x + 1) / 2) * width,
+          y: ((-vector.y + 1) / 2) * height,
+        };
+      }
+    </script>
+    <script>
+	var mouseButton;
+	document.addEventListener('mousedown', (event) => {
+		mouseButton = event.button;
+	});
+	
+	sceneEl.addEventListener('click', (e) => {
+  // Skip if click was part of a selection box drag
+  if (isSelecting) return;
+  // 0 is left, 1 is middle, 2 is right
+  console.log(mouseButton);
+  if (mouseButton !== 2) return;
+  
+  
+  // Only act if plane was clicked
+  if (!e.target.classList.contains('clickable')) return;
+
+  // Get intersection point
+  const intersection = e.detail.intersection;
+  if (!intersection) return;
+
+  const dest = intersection.point;
+
+  selectedUnits.forEach((unit, i) => {
+    const offsetX = (i % 3) * 1.5;
+    const offsetZ = Math.floor(i / 3) * 1.5;
+    const targetX = dest.x + offsetX;
+    const targetZ = dest.z + offsetZ;
+
+    moveUnitTo(unit, { x: targetX, y: 0.5, z: targetZ });
+  });
+});
+
+function moveUnitTo(unit, target) {
+  const duration = 1000; // 1 second
+  const startPos = unit.object3D.position.clone();
+  const endPos = new THREE.Vector3(target.x, target.y, target.z);
+
+  let startTime = null;
+
+  // Get the dimensions of the unit (based on its geometry)
+  const unitSize = unit.getAttribute('geometry');
+  const unitWidth = unitSize.width || 1; // default width if not set
+  const unitHeight = unitSize.height || 1; // default height if not set
+  const unitDepth = unitSize.depth || 1; // default depth if not set
+
+  function animate(time) {
+    if (!startTime) startTime = time;
+    const elapsed = time - startTime;
+    const t = Math.min(elapsed / duration, 1);
+
+    // Lerp toward the main destination
+    let desiredPos = startPos.clone().lerp(endPos, t);
+
+    // Get all units in the scene (excluding the current unit)
+    const allUnits = Array.from(document.querySelectorAll('.unit')).filter((otherUnit) => otherUnit !== unit);
+
+    // Avoidance logic: Check all other units in the scene
+    allUnits.forEach((otherUnit) => {
+      const otherPos = otherUnit.object3D.position;
+      const otherSize = otherUnit.getAttribute('geometry');
+      const otherWidth = otherSize.width || 1;
+      const otherHeight = otherSize.height || 1;
+      const otherDepth = otherSize.depth || 1;
+
+      // Calculate if the bounding boxes are overlapping
+      if (checkBoundingBoxCollision(desiredPos, unitWidth, unitHeight, unitDepth, otherPos, otherWidth, otherHeight, otherDepth)) {
+        // If there is a collision, calculate the separation vector to push the unit away
+        const pushDir = desiredPos.clone().sub(otherPos).normalize();
+        const pushAmount = 0.5; // Strength of avoidance push
+
+        // Push the unit along the axis of collision to prevent overlap
+        desiredPos.add(pushDir.multiplyScalar(pushAmount));
+      }
+    });
+
+    // Update unit position
+    unit.setAttribute('position', desiredPos);
+
+    if (t < 1) {
+      requestAnimationFrame(animate);
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+// Function to check if two AABBs (Axis-Aligned Bounding Boxes) are colliding
+function checkBoundingBoxCollision(pos1, width1, height1, depth1, pos2, width2, height2, depth2) {
+  // Check if the bounding boxes overlap in all axes
+  return (
+    pos1.x + width1 / 2 > pos2.x - width2 / 2 &&
+    pos1.x - width1 / 2 < pos2.x + width2 / 2 &&
+    pos1.y + height1 / 2 > pos2.y - height2 / 2 &&
+    pos1.y - height1 / 2 < pos2.y + height2 / 2 &&
+    pos1.z + depth1 / 2 > pos2.z - depth2 / 2 &&
+    pos1.z - depth1 / 2 < pos2.z + depth2 / 2
+  );
+}
+
+    </script>
+  </body>
+</html>

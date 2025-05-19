@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <style>
+      body { margin: 0; overflow: hidden; }
+      a-scene { height: 200px; width: 200px; }
+    </style>
+  </head>
+  <body>
+    <a-scene embedded shadow="type: basic"  vr-mode-ui="enabled: false">
+	
+	  <a-plane id="ground" color="#7BC8A4" height="100" width="100" rotation="-90 0 0" class="clickable"></a-plane>
+	
+      <!-- Minimap Camera (Top-down) -->
+      <a-entity id="minimapCam" camera="orthographic: true; zoom: 1;" position="0 50 0" rotation="-90 0 0"></a-entity>
+
+      <!-- Units mirrored in the minimap -->
+      <a-box id="minimap-unit-0" position="0 0.5 -5" color="red"></a-box>
+      <a-box id="minimap-unit-1" position="2 0.5 -4" color="gold"></a-box>
+      <a-box id="minimap-enemy" position="-4 0.5 -5" color="black"></a-box>
+      <a-box id="minimap-player" position="-4 0.5 -5" color="green"></a-box>
+    </a-scene>
+  </body>
+</html>
