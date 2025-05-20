@@ -61,6 +61,8 @@
     <iframe id="minimap" src="minimap.html" width="200" height="200" style="position: absolute; top: 10px; right: 10px; border: 2px solid white; background: #000; pointer-events: none; z-index: 1000;"></iframe>
 
     <a-scene cursor="rayOrigin: mouse" raycaster="objects: .selectable">
+	
+
       <!-- Ground -->
       <a-plane id="ground" color="#7BC8A4" height="100" width="100" rotation="-90 0 0" class="clickable"></a-plane>
 
@@ -70,21 +72,27 @@
       <a-box id="enemy" static-body position="-4 0.5 -5" color="black"></a-box>
 	  
 	  <!-- Parent entity to group object and health bar -->
-      <a-entity id="enemy" position="0 0 -3">
+      <a-entity position="0 0 -3">
         
         <!-- Object: box or 3D model -->
-        <a-box position="0 1 0" color="#4CC3D9" depth="1" height="1" width="1"></a-box>
+        <a-box position="0 0.5 0" color="#4CC3D9" depth="1" height="1" width="1"></a-box>
 
         <!-- Health bar group, positioned above the object -->
-        <a-entity position="0 2.1 0">
+        <a-entity position="0 1.6 0" face-camera custom-shadow="receive: false; cast: false; applyToChildren: true;">
           <!-- Background bar -->
-          <a-plane color="gray" width="1" height="0.1" position="0 0 0"></a-plane>
+          <a-plane color="gray" shader="flat" width="1" height="0.1" position="0 0 0"></a-plane>
 
           <!-- Foreground bar (dynamic health) -->
-          <a-plane id="health-bar" color="red" width="1" height="0.1" position="0 0 0.01"></a-plane>
+          <a-plane id="health-bar" shader="flat" color="red" width="1" height="0.1" position="0 0 0.01"></a-plane>
         </a-entity>
 
       </a-entity>
+	  
+	  <a-entity 
+  geometry="primitive: box" 
+  material="color: red" 
+  shadow="cast: false; receive: false">
+</a-entity>
 
       <!-- FPS Camera -->
 	<a-entity
@@ -113,13 +121,76 @@
       <a-entity id="rts-camera" camera position="0 20 20" rotation="-45 0 0" wasd-controls></a-entity>
 
       <!-- Directional Light -->
-      <a-light type="directional" intensity="0.6" position="0 20 10"></a-light>
+      <a-light type="directional" castShadow="true" intensity="0.6" position="0 20 10"></a-light>
 
       <!-- Minimap Camera -->
       <a-entity id="minimap-camera" camera position="0 50 0" rotation="-90 0 0" visible="false"></a-entity>
 
       <!-- Components and Scripts -->
       <script>
+AFRAME.registerComponent('custom-shadow', {
+    schema: {
+        cast:               {type: 'boolean',    default: true},
+        receive:            {type: 'boolean',    default: true},
+        applyToChildren:    {type: 'boolean',    default: true}
+
+    },
+    multiple: false, //do not allow multiple instances of this component on this entity
+    init: function() {
+        this.applyShadow();
+        this.el.addEventListener('object3dset', this.applyShadow.bind(this));
+    },
+    applyShadow : function () {
+        const data    = this.data;
+        const mesh    = this.el.getObject3D('mesh');
+
+        if (!mesh) return;
+
+            mesh.traverse(function (node) {
+                node.castShadow     = data.cast;
+                node.receiveShadow  = data.receive;
+
+                if (data.applyToChildren) {
+                    return;
+                }
+            });
+    },
+    update: function (oldData) {
+        this.applyShadow.bind(this);
+    }
+});
+	  
+	      <!-- Custom component to face the camera -->
+		  AFRAME.registerComponent('face-camera', {
+			tick: function () {
+			  const camera = this.el.sceneEl.camera;
+			  if (!camera) return;
+
+			  const obj = this.el.object3D;
+			  const camPos = new THREE.Vector3();
+			  camera.getWorldPosition(camPos);
+
+			  obj.lookAt(camPos);
+			}
+		  });
+		const healthBar = document.querySelector('#health-bar');
+      let health = 100;
+
+      function updateHealthBar(healthPercent) {
+        let scale = healthPercent / 100;
+        healthBar.setAttribute('scale', `${scale} 1 1`);
+        healthBar.setAttribute('position', `${-(1 - scale) / 2} 0 0.01`);
+      }
+
+      setInterval(() => {
+        if (health > 0) {
+          health = Math.max(0, health - 5);
+          updateHealthBar(health);
+        }
+      }, 1000);
+	  
+	  
+	  
         let selectedUnits = [];
 
         AFRAME.registerComponent('unit-behavior', {
