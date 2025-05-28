@@ -39,7 +39,7 @@ AFRAME.registerComponent('character', {
         this.characterModel = this.el.children[0];
 
         this.recentPositions = [];
-        this.maxHistory = 10;
+        this.maxHistory = 50;
         this.positionThreshold = 1.01; // how close positions must be to be considered "the same"
 
 
@@ -66,15 +66,20 @@ AFRAME.registerComponent('character', {
                 this.stop();
             }
         })
-        this.el.addEventListener('collide', event => this.processCollision(event))
+        this.el.addEventListener('collidestart', event => this.processCollision(event))
     },
     startRunning(direction) {
+        this.wakeUp()
         //console.log("running");
         const directions = Object.keys(this.directions);
 
         this.rotationY = directions.indexOf(direction) * 45;
         this.direction = direction;
         this.velocity = this.directions[direction];
+
+
+        //this.el.setAttribute('rotation', '0 0 0')
+
 
         // rotate the character to the correct direction of movement
         this.characterModel.setAttribute('animation', {
@@ -99,6 +104,11 @@ AFRAME.registerComponent('character', {
             clip: 'idle',
             crossFadeDuration: 0.2,
         });
+
+        this.stopAnimation = true;
+    },
+    wakeUp() {
+        this.el.body.setActivationState(1); // Wake it up
     },
     moveTo(unit, target, dest) {
 
@@ -134,7 +144,7 @@ AFRAME.registerComponent('character', {
 
 
         function startMovingTo(unit, target) {
-            const threshold = 1.1;    // distance at which to stop
+            const threshold = 1.6;    // distance at which to stop
             let currentDirection = null;
         
             const directionMap = {
@@ -171,7 +181,8 @@ AFRAME.registerComponent('character', {
             const update = () => {
                 const pos = unit.object3D.position.clone();
                 const distance = pos.distanceTo(target);
-                
+                //console.log("distance:");
+                //console.log(distance);
                 if (distance <= threshold) {
                     _this.stop();
                     _this.animationRunning = false;
@@ -262,6 +273,7 @@ AFRAME.registerComponent('character', {
                     clearTimeout(_this.collisionTimeout);
                     _this.collisionTimeout = setTimeout(() => requestAnimationFrame(update), 300);
                 } else {*/
+                    //console.log("COLrun")
                     requestAnimationFrame(update);
                 //}
             };
@@ -270,17 +282,124 @@ AFRAME.registerComponent('character', {
         }
     },
     tick() {
-        if (this.velocity !== null) {
+        /*if (this.velocity !== null) {
             // constantly update the velocity of the character to the speed of the movement
             // bypasses friction slowing down the character
             // do not update Y to avoid interference with the physics gravity
             this.el.body.velocity.x = this.velocity.x
             this.el.body.velocity.z = this.velocity.z
+        }*/
+        if (this.velocity !== null) {
+            // constantly update the velocity of the character to the speed of the movement
+            // bypasses friction slowing down the character
+            // do not set y axis velocity, because it is already set by the physics system (gravity)
+            // this.el.body.velocity.x = this.velocity.x
+            // this.el.body.velocity.z = this.velocity.z
+            let currentVelocity = this.el.body.getLinearVelocity();
+            let newVelocity = new Ammo.btVector3(this.velocity.x, currentVelocity.y(), this.velocity.z);  // Set X to 10, keep Y and Z as they are
+            this.el.body.setLinearVelocity(newVelocity);
+            this.el.body.setFriction(2)
+
+            //console.log("running");
+            //console.log(this.velocity)
+            //console.log(newVelocity)
+
+
+                            
+            var _this = this;
+
+                    
+            function updateRecentPositions(currentPos) {
+                _this.recentPositions.push(currentPos.clone());
+
+                // Keep only the last 10 positions
+                if (_this.recentPositions.length > _this.maxHistory) {
+                    _this.recentPositions.shift();
+                }
+            }
+
+            function isStuckInPlace() {
+                if (_this.recentPositions.length < _this.maxHistory) return false;
+
+                const reference = _this.recentPositions[0];
+
+                return _this.recentPositions.every(pos => pos.distanceTo(reference) < _this.positionThreshold);
+            }
+
+
+
+
+            const currentPos = this.el.object3D.position;
+            updateRecentPositions(currentPos);
+            //console.log(currentPos);
+
+            if (isStuckInPlace() && this.animationRunning) {// && !this.collision && !this.collisionRepthaRunning
+                _this.recentPositions = [];
+                console.log("Character is stuck — try rotating direction or re-pathing.");
+                // Insert logic to change direction or try alternative movement
+                //this.collision = true;
+                this.stop();
+            }
+
         }
     },
 
     processCollision(event) {
+        
+return;
+
+
+console.log("collision")
+                
+        var _this = this;
+
+                
+        function updateRecentPositions(currentPos) {
+            _this.recentPositions.push(currentPos.clone());
+
+            // Keep only the last 10 positions
+            if (_this.recentPositions.length > _this.maxHistory) {
+                _this.recentPositions.shift();
+            }
+        }
+
+        function isStuckInPlace() {
+            if (_this.recentPositions.length < _this.maxHistory) return false;
+
+            const reference = _this.recentPositions[0];
+
+            return _this.recentPositions.every(pos => pos.distanceTo(reference) < _this.positionThreshold);
+        }
+
+
+
+
+        const currentPos = this.el.object3D.position;
+        updateRecentPositions(currentPos);
+        //console.log(currentPos);
+
+        if (isStuckInPlace() && this.animationRunning) {// && !this.collision && !this.collisionRepthaRunning
+            _this.recentPositions = [];
+            console.log("Character is stuck — try rotating direction or re-pathing.");
+            // Insert logic to change direction or try alternative movement
+            //this.collision = true;
+            this.stop();
+        }
+
+
+
+return;
+
+
+
+
+
+
+
         const otherEntity = event.detail.body;
+
+
+
 //console.log("COLLISION");
         // consider only collisions with obstacles (entities having obstacle component)
         if (!otherEntity.el.hasAttribute('obstacle') && !otherEntity.el.hasAttribute('character')) {
@@ -303,29 +422,12 @@ AFRAME.registerComponent('character', {
             500
         );
 
-        
-        var _this = this;
-
-                
-        function updateRecentPositions(currentPos) {
-            _this.recentPositions.push(currentPos.clone());
-
-            // Keep only the last 10 positions
-            if (_this.recentPositions.length > _this.maxHistory) {
-                _this.recentPositions.shift();
-            }
-        }
-
-        function isStuckInPlace() {
-            if (_this.recentPositions.length < _this.maxHistory) return false;
-
-            const reference = _this.recentPositions[0];
-
-            return _this.recentPositions.every(pos => pos.distanceTo(reference) < _this.positionThreshold);
-        }
 
 
-        if (otherEntity.el.hasAttribute('obstacle')) {
+
+
+
+        /*if (otherEntity.el.hasAttribute('obstacle')) {
 
             const currentPos = this.el.object3D.position;
             updateRecentPositions(currentPos);
@@ -339,7 +441,7 @@ AFRAME.registerComponent('character', {
                 this.stop();
             }
 
-        } else if (otherEntity.el.hasAttribute('character')) {
+        } else*/ if (otherEntity.el.hasAttribute('character')) {
 
             /*if (otherEntity.el.getAttribute('character').destPoint == this.data.destPoint) {
                 console.log("same target point!");

@@ -236,6 +236,7 @@ AFRAME.registerComponent('cam', {
             if (!intersection) return;
             
             const dest = intersection.point;
+            console.log(dest)
             
             selectedUnits.forEach((unit, i) => {
                 const offsetX = (i % 3) * 1.5;
@@ -245,11 +246,11 @@ AFRAME.registerComponent('cam', {
             
                 
                 if (unit.components["unit"] != null) {
-                    unit.components["unit"].moveTo(unit, { x: targetX, y: 0.5, z: targetZ });
+                    unit.components["unit"].moveTo(unit, { x: targetX, y: dest.y, z: targetZ }); //0.5
                 }
                 if (unit.components["character"] != null) {
                     console.log("start running");
-                    unit.components["character"].moveTo(unit, { x: targetX, y: 0.5, z: targetZ }, dest);
+                    unit.components["character"].moveTo(unit, { x: targetX, y: dest.y, z: targetZ }, dest);
                 }
                 //moveUnitTo(unit, { x: targetX, y: 0.5, z: targetZ });
             });
