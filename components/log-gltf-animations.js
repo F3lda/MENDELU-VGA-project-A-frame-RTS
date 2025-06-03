@@ -5,7 +5,7 @@ AFRAME.registerComponent('log-gltf-animations', {
             const animations = model.animations || model.scene.animations;
 
             if (!animations || animations.length === 0) {
-                console.log('No animations found in GLTF model.');
+                console.log('No animations found in GLTF model ('+this.el.getAttribute('gltf-model')+').');
                 return;
             }
 

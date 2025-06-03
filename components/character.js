@@ -1,8 +1,18 @@
 AFRAME.registerComponent('character', {
     schema: {
-        destPoint: {default: null}
+        //destPoint: {default: null}
+        health: {type: 'int', default: 100},
+        damage: {type: 'int', default: 30},
     },
     init() {
+
+        this.el.addEventListener("body-loaded", e => {
+            // cache the ammo-body component
+            this.ammoComponent = this.el.components["ammo-body"];
+            // use this vector to zero the velocity
+            // keep in mind this needs to be deleted manually from the memory with Ammo.destroy(this.zeroSpeed)
+            this.zeroSpeed = new Ammo.btVector3(0, 0, 0);
+        });
 
         this.animationRunning = false;
         this.stopAnimation = false;
@@ -34,12 +44,26 @@ AFRAME.registerComponent('character', {
         this.health = 100;
         this.collisionBodies = [];
         this.velocity = null;
-        this.rotationY = 90;
-        this.direction = 'right';
+        this.rotationY = 0;
+        this.direction = 'front';
         this.characterModel = this.el.children[0];
+        this.characterModelName = this.el.children[0].getAttribute('gltf-model');
+        console.log(this.characterModelName);
+        // custom model variables
+        this.animationRun = "run";
+        this.animationIdle = "idle";
+        this.modelRotationCorrection = 0;
+
+        if (this.characterModelName.includes("Dump_truck.glb")) {
+            this.modelRotationCorrection = 180;
+        }
+
+
+
+
 
         this.recentPositions = [];
-        this.maxHistory = 50;
+        this.maxHistory = 100;
         this.positionThreshold = 1.01; // how close positions must be to be considered "the same"
 
 
@@ -73,25 +97,54 @@ AFRAME.registerComponent('character', {
         //console.log("running");
         const directions = Object.keys(this.directions);
 
-        this.rotationY = directions.indexOf(direction) * 45;
+        var lastRotationY = this.rotationY;
+        this.rotationY = directions.indexOf(direction) * 45 + this.modelRotationCorrection;// correction for wrong rotated models
         this.direction = direction;
         this.velocity = this.directions[direction];
 
+        if (lastRotationY != this.rotationY) {
 
-        //this.el.setAttribute('rotation', '0 0 0')
+            // rotate from current rotation
+            var animationRotationY = this.rotationY-lastRotationY;
+            // rotate the shortest path
+            if (animationRotationY > 180) {
+                animationRotationY -= 360;
+            } else if (animationRotationY < -180) {
+                animationRotationY += 360;
+            }
+            // pause ammo body because of the rotation
+            this.el.components['ammo-body'].pause();
+            // start model rotation animation
+            this.characterModel.setAttribute('animation', {
+                property: 'rotation',
+                to: {x: 0, y: animationRotationY, z: 0},
+                dur: 500,
+                easing: 'easeOutQuad',
+            })
 
 
-        // rotate the character to the correct direction of movement
-        this.characterModel.setAttribute('animation', {
-            property: 'rotation',
-            to: {x: 0, y: this.rotationY, z: 0},
-            dur: 500,
-            easing: 'easeOutQuad',
-        })
+            var _this = this;
+            setTimeout(function () {
+                // when animation ends -> sync ammo physics
+                // set ammo body rotation
+                _this.el.setAttribute('rotation', {x: 0, y: _this.rotationY, z: 0});
+                // resume physics
+                _this.el.components['ammo-body'].play();
+                _this.ammoComponent.syncToPhysics();
+                // reset model rotation animation
+                _this.characterModel.setAttribute('animation', {
+                    property: 'rotation',
+                    to: {x: 0, y: 0, z: 0},
+                    dur: 0,
+                    easing: 'easeOutQuad',
+                })
+            }, 500);
+        }
 
+        
         // start the character's animation
         this.characterModel.setAttribute('animation-mixer', {
-            clip: 'run',
+            clip: this.animationRun,
             crossFadeDuration: 0.2,
         });
     },
@@ -101,7 +154,7 @@ AFRAME.registerComponent('character', {
 
         // stop the animation
         this.characterModel.setAttribute('animation-mixer', {
-            clip: 'idle',
+            clip: this.animationIdle,
             crossFadeDuration: 0.2,
         });
 
@@ -122,7 +175,7 @@ AFRAME.registerComponent('character', {
 
         console.log('UNIT: moving to: '+target);
 
-        this.data.destPoint = dest;
+        //this.data.destPoint = dest;
         
         var _this = this;
         if (this.animationRunning) {
@@ -305,10 +358,9 @@ AFRAME.registerComponent('character', {
             //console.log(newVelocity)
 
 
-                            
+            /*************** STUCK CHECK *****************/                
             var _this = this;
-
-                    
+            
             function updateRecentPositions(currentPos) {
                 _this.recentPositions.push(currentPos.clone());
 
@@ -325,10 +377,7 @@ AFRAME.registerComponent('character', {
 
                 return _this.recentPositions.every(pos => pos.distanceTo(reference) < _this.positionThreshold);
             }
-
-
-
-
+            
             const currentPos = this.el.object3D.position;
             updateRecentPositions(currentPos);
             //console.log(currentPos);
@@ -343,64 +392,52 @@ AFRAME.registerComponent('character', {
 
         }
     },
+    getDamage(damage) {
 
+        function updateHealthBar(healthPercent, healthBar) {
+            let scale = healthPercent / 100;
+            healthBar.setAttribute('scale', `${scale} 1 1`);
+            healthBar.setAttribute('position', `${-(1 - scale) / 2} 0 0.01`);
+        }
+
+        //console.log("DAMAGE: "+damage);
+
+        this.data.health -= damage;
+        updateHealthBar(this.data.health, this.el.querySelector('#health-bar'))
+
+        // TODO damage <= 0 -> kill and drop
+    },
+    changeSelection(selected) {
+        //console.log("change selection: "+ selected);
+        const healthBarEntity = this.el.querySelector('#health-bar').parentElement;
+        if (selected){
+            healthBarEntity.setAttribute("visible", true);
+        } else {
+            healthBarEntity.setAttribute("visible", false);
+        }
+    },
+    attackEnemy(unit, target) {
+        console.log("atack on enemy:");
+        console.log(target)
+        // move until raycaster can see enemy or is in distance
+    },
     processCollision(event) {
         
+
+
+        const otherEntity = event.detail.targetEl;
+
+        // consider only collisions with obstacles (entities having obstacle component)
+        if (!otherEntity.hasAttribute('drop')) {
+            return;
+        }
+
+
+        otherEntity.components["drop"].pickup(this.el);
+
+
+console.log("DROP COLLISION");
 return;
-
-
-console.log("collision")
-                
-        var _this = this;
-
-                
-        function updateRecentPositions(currentPos) {
-            _this.recentPositions.push(currentPos.clone());
-
-            // Keep only the last 10 positions
-            if (_this.recentPositions.length > _this.maxHistory) {
-                _this.recentPositions.shift();
-            }
-        }
-
-        function isStuckInPlace() {
-            if (_this.recentPositions.length < _this.maxHistory) return false;
-
-            const reference = _this.recentPositions[0];
-
-            return _this.recentPositions.every(pos => pos.distanceTo(reference) < _this.positionThreshold);
-        }
-
-
-
-
-        const currentPos = this.el.object3D.position;
-        updateRecentPositions(currentPos);
-        //console.log(currentPos);
-
-        if (isStuckInPlace() && this.animationRunning) {// && !this.collision && !this.collisionRepthaRunning
-            _this.recentPositions = [];
-            console.log("Character is stuck — try rotating direction or re-pathing.");
-            // Insert logic to change direction or try alternative movement
-            //this.collision = true;
-            this.stop();
-        }
-
-
-
-return;
-
-
-
-
-
-
-
-        const otherEntity = event.detail.body;
-
-
-
-//console.log("COLLISION");
         // consider only collisions with obstacles (entities having obstacle component)
         if (!otherEntity.el.hasAttribute('obstacle') && !otherEntity.el.hasAttribute('character')) {
             return;

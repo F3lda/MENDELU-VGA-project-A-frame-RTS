@@ -25,6 +25,7 @@ AFRAME.registerComponent('unit', {
             this.animationRunning = true;
             this.stopAnimation = false;
             moveUnitTo(unit, point, this);
+            
         }
 
 

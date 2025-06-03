@@ -126,9 +126,11 @@ AFRAME.registerComponent('cam', {
 
 
 
+        /* ************ units selection - test ********** */
+
         const selectionBox = document.getElementById('selectionBox');
         const sceneEl = document.querySelector('a-scene');
-        const units = Array.from(document.querySelectorAll('.unit'));
+        const units = Array.from(document.querySelectorAll('.selectable'));
 
         let startX, startY, endX, endY;
         let isSelecting = false;
@@ -182,9 +184,9 @@ AFRAME.registerComponent('cam', {
                 screenPos.y <= rect.bottom
             ) {
                 selectedUnits.push(unit);
-                unit.setAttribute('color', 'yellow');
+                unit.components["character"].changeSelection(true);
             } else {
-                unit.setAttribute('color', 'red');
+                unit.components["character"].changeSelection(false);
             }
             });
 
@@ -216,6 +218,16 @@ AFRAME.registerComponent('cam', {
         document.addEventListener('mousedown', (event) => {
             mouseButton = event.button;
         });
+
+        sceneEl.addEventListener('mouseenter', (event) => {
+            console.log("mouseenter")
+            console.log(event.target)
+        });
+        sceneEl.addEventListener('mouseleave', (event) => {
+            //console.log("mouseenter")
+            //console.log(event.target)
+            // cursorObject = null
+        });
         
         sceneEl.addEventListener('click', (e) => {
             
@@ -245,12 +257,16 @@ AFRAME.registerComponent('cam', {
                 const targetZ = dest.z + offsetZ;
             
                 
-                if (unit.components["unit"] != null) {
+                /*if (unit.components["unit"] != null) {
                     unit.components["unit"].moveTo(unit, { x: targetX, y: dest.y, z: targetZ }); //0.5
-                }
+                }*/
                 if (unit.components["character"] != null) {
-                    console.log("start running");
-                    unit.components["character"].moveTo(unit, { x: targetX, y: dest.y, z: targetZ }, dest);
+                    if (e.target.classList.contains('enemy')) {
+                        unit.components["character"].attackEnemy(unit, e.target)
+                    } else {
+                        console.log("start running");
+                        unit.components["character"].moveTo(unit, { x: targetX, y: dest.y, z: targetZ }, dest);
+                    }
                 }
                 //moveUnitTo(unit, { x: targetX, y: 0.5, z: targetZ });
             });
