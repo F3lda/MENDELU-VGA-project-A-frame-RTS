@@ -56,17 +56,20 @@ import './shaders/glowing'
     "aframe-extras": "^7.5.4",
     "aframe-physics-system": "git://github.com/n5ro/aframe-physics-system.git"
     
+
+
+    <a-asset-item id="eva" src="/models/eva-animated-complete.glb"></a-asset-item>
   */
 document.querySelector('#app').innerHTML = `
     <div id="selectionBox"></div>
 
-    <a-scene physics=" driver: ammo; debug: true; debugDrawMode: 1;">
+    <a-scene physics="driver: ammo; debug: true; debugDrawMode: 1;">
 
       
         <!-- External files -->
         <a-assets>
             <a-asset-item id="tree" src="/models/tree/tree.gltf"></a-asset-item>
-            <a-asset-item id="eva" src="/models/eva-animated-complete.glb"></a-asset-item>
+            <a-asset-item id="eva" src="/models/Units/Soldier/Character_Soldier.glb"></a-asset-item>
             <a-asset-item id="buldoz" src="/models/Units/Bulldozer/Bulldozer.glb"></a-asset-item>
             <a-asset-item id="dump" src="/models/Units/DumpTruck/Dump_truck.glb"></a-asset-item>
             <a-asset-item id="enemy" src="/models/Enemies/Character_Enemy.glb"></a-asset-item>
@@ -98,7 +101,7 @@ document.querySelector('#app').innerHTML = `
 
         <!-- Character -->
         <a-entity character class="selectable" ammo-body="type: dynamic; angularFactor: 0 0 0; mass: 20; emitCollisionEvents: true;" position="-2 5 -3">
-            <a-entity gltf-model="#eva" log-gltf-animations ammo-shape="type: hull;" animation-mixer="clip: idle;" position="0 -0.7 0" rotation="0 0 0" scale="1 1 1"></a-entity>
+            <a-entity gltf-model="#eva" log-gltf-animations ammo-shape="type: hull;" animation-mixer="clip: CharacterArmature|Idle;" position="0 -1.1 -1" rotation="0 0 0" scale="1 1 1"></a-entity>
             
             <!-- Health bar group, positioned above the object -->
             <a-entity position="0 1.6 0" face-camera visible="false">
@@ -111,7 +114,7 @@ document.querySelector('#app').innerHTML = `
         </a-entity>
         <!-- Character -->
         <a-entity character class="selectable" ammo-body="type: dynamic; angularFactor: 0 0 0; mass: 20; emitCollisionEvents: true;" position="-2 5 -3">
-            <a-entity gltf-model="#eva" log-gltf-animations ammo-shape="type: hull;" animation-mixer="clip: idle;" position="0 -0.7 0" rotation="0 0 0" scale="1 1 1"></a-entity>
+            <a-entity gltf-model="#eva" log-gltf-animations ammo-shape="type: hull;" animation-mixer="clip: CharacterArmature|Idle;" position="0 -1.1 -1" rotation="0 0 0" scale="1 1 1"></a-entity>
             
             <!-- Health bar group, positioned above the object -->
             <a-entity position="0 1.6 0" face-camera visible="false">
@@ -124,7 +127,7 @@ document.querySelector('#app').innerHTML = `
         </a-entity>        
         <!-- Character -->
         <a-entity character class="selectable" ammo-body="type: dynamic; angularFactor: 0 0 0; mass: 20; emitCollisionEvents: true;" position="-2 5 -3">
-            <a-entity gltf-model="#eva" log-gltf-animations ammo-shape="type: hull;" animation-mixer="clip: idle;" position="0 -0.7 0" rotation="0 0 0" scale="1 1 1"></a-entity>
+            <a-entity gltf-model="#eva" log-gltf-animations ammo-shape="type: hull;" animation-mixer="clip: CharacterArmature|Idle;" position="0 -1.1 -1" rotation="0 0 0" scale="1 1 1"></a-entity>
             
             <!-- Health bar group, positioned above the object -->
             <a-entity position="0 1.6 0" face-camera visible="false">
@@ -177,7 +180,7 @@ document.querySelector('#app').innerHTML = `
 
         <!-- Enemy -->
         <a-entity enemy ammo-body="type: dynamic; angularFactor: 0 0 0; mass: 20; emitCollisionEvents: true;" position="-2 5 -3">
-            <a-entity class="clickable enemy" gltf-model="#eva" log-gltf-animations ammo-shape="type: hull;" animation-mixer="clip: idle;" position="0 -0.7 0" rotation="0 0 0" scale="1 1 1"></a-entity>
+            <a-entity class="clickable enemy" gltf-model="#enemy" log-gltf-animations ammo-shape="type: hull;" animation-mixer="clip: CharacterArmature|Idle;" position="0 -1.15 -0.8" rotation="0 0 0" scale="1 1 1"></a-entity>
             
             <!-- Health bar group, positioned above the object -->
             <a-entity position="0 1.6 0" face-camera visible="true">

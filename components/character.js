@@ -50,12 +50,12 @@ AFRAME.registerComponent('character', {
         this.characterModelName = this.el.children[0].getAttribute('gltf-model');
         console.log(this.characterModelName);
         // custom model variables
-        this.animationRun = "run";
-        this.animationIdle = "idle";
-        this.modelRotationCorrection = 0;
+        this.animationRun = "CharacterArmature|Run";
+        this.animationIdle = "CharacterArmature|Idle";
+        this.modelRotationCorrection = 90;
 
         if (this.characterModelName.includes("Dump_truck.glb")) {
-            this.modelRotationCorrection = 180;
+            this.modelRotationCorrection += 180;
         }
 
 
@@ -63,7 +63,7 @@ AFRAME.registerComponent('character', {
 
 
         this.recentPositions = [];
-        this.maxHistory = 100;
+        this.maxHistory = 200; // TODO add timeout for saving positions (150 ms)
         this.positionThreshold = 1.01; // how close positions must be to be considered "the same"
 
 
@@ -103,9 +103,9 @@ AFRAME.registerComponent('character', {
         this.velocity = this.directions[direction];
 
         if (lastRotationY != this.rotationY) {
-
+/*
             // rotate from current rotation
-            var animationRotationY = this.rotationY-lastRotationY;
+            var animationRotationY = this.rotationY;//-lastRotationY;
             // rotate the shortest path
             if (animationRotationY > 180) {
                 animationRotationY -= 360;
@@ -115,9 +115,10 @@ AFRAME.registerComponent('character', {
             // pause ammo body because of the rotation
             this.el.components['ammo-body'].pause();
             // start model rotation animation
-            this.characterModel.setAttribute('animation', {
+            this.el.setAttribute('animation', {
                 property: 'rotation',
                 to: {x: 0, y: animationRotationY, z: 0},
+                //to: {x: 0, y: this.rotationY, z: 0},
                 dur: 500,
                 easing: 'easeOutQuad',
             })
@@ -127,18 +128,81 @@ AFRAME.registerComponent('character', {
             setTimeout(function () {
                 // when animation ends -> sync ammo physics
                 // set ammo body rotation
-                _this.el.setAttribute('rotation', {x: 0, y: _this.rotationY, z: 0});
+                //_this.el.setAttribute('rotation', {x: 0, y: _this.rotationY, z: 0});
                 // resume physics
                 _this.el.components['ammo-body'].play();
                 _this.ammoComponent.syncToPhysics();
                 // reset model rotation animation
-                _this.characterModel.setAttribute('animation', {
-                    property: 'rotation',
-                    to: {x: 0, y: 0, z: 0},
-                    dur: 0,
-                    easing: 'easeOutQuad',
-                })
-            }, 500);
+                //_this.el.setAttribute('animation', {
+                //    property: 'rotation',
+                //    to: {x: 0, y: 0, z: 0},
+                //    dur: 0,
+                //    easing: 'easeOutQuad',
+                //})
+            }, 500);*/
+
+            function rotateAmmoBodyToFacing(body, angleDegrees, duration = 500) {
+                const startTime = performance.now();
+
+                // Convert angle to radians and apply -90° offset
+                const angleRad = THREE.MathUtils.degToRad(angleDegrees - 90);
+              
+                // Get current transform and rotation
+                const transform = new Ammo.btTransform();
+                body.getMotionState().getWorldTransform(transform);
+                const ammoQuat = transform.getRotation();
+              
+                const currentQuat = new THREE.Quaternion(
+                  ammoQuat.x(),
+                  ammoQuat.y(),
+                  ammoQuat.z(),
+                  ammoQuat.w()
+                );
+              
+                // Target rotation (around Y-axis)
+                const yAxis = new THREE.Vector3(0, 1, 0);
+                const targetQuat = new THREE.Quaternion().setFromAxisAngle(yAxis, angleRad);
+              
+                const intermediateQuat = new THREE.Quaternion();
+              
+                // Easing function: easeInOutQuad
+                function easeInOutQuad(t) {
+                  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+                }
+              
+                // Animation loop
+                function animate(time) {
+                    const elapsed = time - startTime;
+                    const tRaw = Math.min(elapsed / duration, 1);       // linear time
+                    const t = easeInOutQuad(tRaw);                      // eased time
+                
+                    intermediateQuat.copy(currentQuat).slerp(targetQuat, t);
+                
+                    const newBtQuat = new Ammo.btQuaternion(
+                        intermediateQuat.x,
+                        intermediateQuat.y,
+                        intermediateQuat.z,
+                        intermediateQuat.w
+                    );
+                
+                    transform.setRotation(newBtQuat);
+                    body.setWorldTransform(transform);
+                    body.getMotionState().setWorldTransform(transform);
+                
+                    Ammo.destroy(newBtQuat);
+                
+                    if (tRaw < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        Ammo.destroy(ammoQuat);
+                        Ammo.destroy(transform);
+                    }
+                }
+              
+                requestAnimationFrame(animate);
+            }
+            console.log("Rot: "+this.rotationY);
+            rotateAmmoBodyToFacing(this.el.body, this.rotationY);
         }
 
         
