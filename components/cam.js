@@ -220,8 +220,8 @@ AFRAME.registerComponent('cam', {
         });
 
         sceneEl.addEventListener('mouseenter', (event) => {
-            console.log("mouseenter")
-            console.log(event.target)
+            //console.log("mouseenter")
+            //console.log(event.target)
         });
         sceneEl.addEventListener('mouseleave', (event) => {
             //console.log("mouseenter")
@@ -261,8 +261,8 @@ AFRAME.registerComponent('cam', {
                     unit.components["unit"].moveTo(unit, { x: targetX, y: dest.y, z: targetZ }); //0.5
                 }*/
                 if (unit.components["character"] != null) {
-                    if (e.target.classList.contains('enemy')) {
-                        unit.components["character"].attackEnemy(unit, e.target)
+                    if (e.target.parentElement.hasAttribute('enemy')) {
+                        unit.components["character"].attackEnemy(e.target.parentElement)
                     } else {
                         console.log("start running");
                         unit.components["character"].moveTo(unit, { x: targetX, y: dest.y, z: targetZ }, dest);
