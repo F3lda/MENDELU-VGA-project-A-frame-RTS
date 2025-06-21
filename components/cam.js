@@ -262,7 +262,7 @@ AFRAME.registerComponent('cam', {
                 }*/
                 if (unit.components["character"] != null) {
                     if (e.target.parentElement.hasAttribute('enemy')) {
-                        unit.components["character"].attackEnemy(e.target.parentElement)
+                        //unit.components["character"].attackEnemy(e.target.parentElement); //maybe TODO
                     } else {
                         console.log("start running");
                         unit.components["character"].moveTo(unit, { x: targetX, y: dest.y, z: targetZ }, dest);

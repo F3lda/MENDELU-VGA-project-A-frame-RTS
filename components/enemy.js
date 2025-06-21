@@ -2,7 +2,7 @@ AFRAME.registerComponent('enemy', {
     schema: {
         //destPoint: {default: null}
         health: {type: 'int', default: 100},
-        damage: {type: 'int', default: 30},
+        damage: {type: 'int', default: 15},
         attackTime: {type: 'int', default: 1000} //ms
     },
     init() {
@@ -65,6 +65,24 @@ AFRAME.registerComponent('enemy', {
                 crossFadeDuration: 0.2,
             });
             setTimeout(() => this.el.remove(), 500);
+
+            // drop
+            const camera = this.el;
+            const scene = camera.sceneEl;
+            const bullet = document.createElement("a-sphere");
+            bullet.setAttribute("radius", 0.5);
+            bullet.setAttribute("color", "orange");
+
+            // Set bullet's starting position at camera
+            bullet.setAttribute('position', camera.getAttribute('position'));
+
+            // Add ammo.js rigid body
+            bullet.setAttribute("ammo-body", "type: dynamic; mass: 0.1; shape: sphere; emitCollisionEvents: true;");
+            bullet.setAttribute("ammo-shape", "type: box;");
+
+            bullet.setAttribute('drop', {size: 20});
+            
+            scene.appendChild(bullet);
         }
     },
     attackEnemy(target) {

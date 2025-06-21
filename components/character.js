@@ -2,7 +2,7 @@ AFRAME.registerComponent('character', {
     schema: {
         //destPoint: {default: null}
         health: {type: 'int', default: 100},
-        damage: {type: 'int', default: 15},
+        damage: {type: 'int', default: 30},
         attackTime: {type: 'int', default: 1000} //ms
     },
     init() {
@@ -519,8 +519,10 @@ AFRAME.registerComponent('character', {
         const healthBarEntity = this.el.querySelector('#health-bar').parentElement;
         if (selected){
             healthBarEntity.setAttribute("visible", true);
+            if (this.characterModelName.includes("Dump_truck.glb")) {this.el.querySelector('#dump-bar').parentElement.setAttribute("visible", true);}
         } else {
             healthBarEntity.setAttribute("visible", false);
+            if (this.characterModelName.includes("Dump_truck.glb")) {this.el.querySelector('#dump-bar').parentElement.setAttribute("visible", false);}
         }
     },
     attackEnemy(target) {
@@ -636,10 +638,10 @@ AFRAME.registerComponent('character', {
         }
 
 
-        otherEntity.components["drop"].pickup(this.el);
+        //otherEntity.components["drop"].pickup(this.el);
 
 
-console.log("DROP COLLISION");
+//console.log("DROP COLLISION");
 return;
         // consider only collisions with obstacles (entities having obstacle component)
         if (!otherEntity.el.hasAttribute('obstacle') && !otherEntity.el.hasAttribute('character')) {
