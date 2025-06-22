@@ -130,7 +130,7 @@ AFRAME.registerComponent('cam', {
 
         const selectionBox = document.getElementById('selectionBox');
         const sceneEl = document.querySelector('a-scene');
-        const units = Array.from(document.querySelectorAll('.selectable'));
+        //const units = Array.from(document.querySelectorAll('.selectable'));
 
         let startX, startY, endX, endY;
         let isSelecting = false;
@@ -173,6 +173,7 @@ AFRAME.registerComponent('cam', {
             
             selectionBox.style.display = 'none';
 
+            const units = Array.from(document.querySelectorAll('.selectable'));
             units.forEach((unit) => {
             const worldPos = unit.object3D.getWorldPosition(new THREE.Vector3());
             const screenPos = worldToScreen(worldPos, sceneEl.camera);			

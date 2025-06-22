@@ -15,6 +15,10 @@ AFRAME.registerComponent('character', {
             // use this vector to zero the velocity
             // keep in mind this needs to be deleted manually from the memory with Ammo.destroy(this.zeroSpeed)
             this.zeroSpeed = new Ammo.btVector3(0, 0, 0);
+
+            console.log(this.el.children[0].getAttribute('gltf-model'));
+            //this.characterModelName = this.el.children[0].getAttribute('gltf-model');
+            //console.log(this.characterModelName)
         });
 
         this.animationRunning = false;
@@ -58,7 +62,7 @@ AFRAME.registerComponent('character', {
         this.animationAttack = "CharacterArmature|Idle_Shoot";
         this.modelRotationCorrection = 0;
 
-        if (this.characterModelName.includes("Dump_truck.glb")) {
+        if (this.characterModelName.includes("#dump")) {
             this.modelRotationCorrection += 180;
         }
 
@@ -463,7 +467,7 @@ AFRAME.registerComponent('character', {
 
 
 
-        if (this.characterModelName.includes("Character_Soldier.glb")) {// only soldiers can attack
+        if (this.characterModelName.includes("#soldier")) {// only soldiers can attack
 
             // Get current entity's world position
             const currentPosition = new THREE.Vector3();
@@ -519,10 +523,10 @@ AFRAME.registerComponent('character', {
         const healthBarEntity = this.el.querySelector('#health-bar').parentElement;
         if (selected){
             healthBarEntity.setAttribute("visible", true);
-            if (this.characterModelName.includes("Dump_truck.glb")) {this.el.querySelector('#dump-bar').parentElement.setAttribute("visible", true);}
+            if (this.characterModelName.includes("#dump")) {this.el.querySelector('#dump-bar').parentElement.setAttribute("visible", true);}
         } else {
             healthBarEntity.setAttribute("visible", false);
-            if (this.characterModelName.includes("Dump_truck.glb")) {this.el.querySelector('#dump-bar').parentElement.setAttribute("visible", false);}
+            if (this.characterModelName.includes("#dump")) {this.el.querySelector('#dump-bar').parentElement.setAttribute("visible", false);}
         }
     },
     attackEnemy(target) {

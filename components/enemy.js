@@ -18,7 +18,7 @@ AFRAME.registerComponent('enemy', {
     tick() {
         
 
-        if (this.characterModelName.includes("Character_Enemy.glb")) {// only enemy can attack
+        if (this.characterModelName.includes("#enemy")) {// only enemy can attack
 
             // Get current entity's world position
             const currentPosition = new THREE.Vector3();
