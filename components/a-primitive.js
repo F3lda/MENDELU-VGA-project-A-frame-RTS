@@ -11,7 +11,7 @@ AFRAME.registerComponent('a-primitive', {
         }
 
         let element = createElementFromHTML(this.data.data);
-
+console.log(element)
         this.el.innerHTML = element.innerHTML;
         if (element.hasAttributes()) {
             for (const attr of element.attributes) {

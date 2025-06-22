@@ -45,6 +45,8 @@ AFRAME.registerComponent('enemy', {
     },
     getDamage(damage) {
 
+        if (this.data.health <= 0) {return;} // skip multiple drop
+
         function updateHealthBar(healthPercent, healthBar) {
             let scale = healthPercent / 100;
             healthBar.setAttribute('scale', `${scale} 1 1`);
@@ -69,7 +71,7 @@ AFRAME.registerComponent('enemy', {
             // drop
             const camera = this.el;
             const scene = camera.sceneEl;
-            const bullet = document.createElement("a-sphere");
+            /*const bullet = document.createElement("a-sphere");
             bullet.setAttribute("radius", 0.5);
             bullet.setAttribute("color", "orange");
 
@@ -80,6 +82,11 @@ AFRAME.registerComponent('enemy', {
             bullet.setAttribute("ammo-body", "type: dynamic; mass: 0.1; shape: sphere; emitCollisionEvents: true;");
             bullet.setAttribute("ammo-shape", "type: box;");
 
+            bullet.setAttribute('drop', {size: 20});*/
+
+            const bullet = document.createElement("a-drop");
+            // Set bullet's starting position at camera
+            bullet.setAttribute('position', camera.getAttribute('position'));
             bullet.setAttribute('drop', {size: 20});
             
             scene.appendChild(bullet);

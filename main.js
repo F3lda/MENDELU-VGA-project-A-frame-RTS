@@ -6,13 +6,18 @@ import './components/enemy'
 import './primitives/a-character'
 import './primitives/a-enemy'
 import './primitives/a-dumptruck'
+import './primitives/a-silo'
+import './primitives/a-drop'
 import './primitives/a-bulldozer'
+import './primitives/a-barracks'
+import './primitives/a-base-garage'
 import './components/a-primitive'
 import './components/dumptruck'
 import './components/character'
 import './components/bullet'
 //import './components/old/obstacle'
 import './components/cam'
+import './components/silo'
 import './components/drop'
 import './components/face-camera'
 //import './components/old/pokus'
@@ -37,6 +42,11 @@ document.querySelector('#app').innerHTML = `
             <a-asset-item id="buldoz" src="/models/Units/Bulldozer/Bulldozer.glb"></a-asset-item>
             <a-asset-item id="dump" src="/models/Units/DumpTruck/Dump_truck.glb"></a-asset-item>
             <a-asset-item id="enemy" src="/models/Enemies/Character_Enemy.glb"></a-asset-item>
+            <a-asset-item id="garage" src="/models/Buildings/Garage/Base.1.glb"></a-asset-item>
+            <a-asset-item id="antena" src="/models/Buildings/Base/Radio_tower.glb"></a-asset-item>
+            <a-asset-item id="silo_water" src="/models/Buildings/Silo/Water_Tank.glb"></a-asset-item>
+            <a-asset-item id="silo_container" src="/models/Buildings/Silo/Container_Small.glb"></a-asset-item>
+            <a-asset-item id="barracks" src="/models/Buildings/Barracks/Large_building_2.glb"></a-asset-item>
             <a-asset-item id="terrain" src="/models/t.glb"></a-asset-item>
             <img src="/models/grass.jpg" id="grass">
             <img src="/models/asteroid.jpg" id="ball">
@@ -73,13 +83,15 @@ document.querySelector('#app').innerHTML = `
         <a-bulldozer p-position="-12 5 -8"></a-bulldozer>
 
 
+        <a-base-garage p-position="-12 0 5"></a-base-garage>
+        <a-silo p-position="-17 -2 5"></a-silo>
 
-        <!-- Obstacles -->
-        <a-sphere drop ammo-body="type: dynamic" ammo-shape="type: box" obstacle="strength: 100"  position="2 5 -3" radius="0.5" color="orange"></a-sphere>
-        <a-sphere drop ammo-body="type: dynamic" ammo-shape="type: box" obstacle="strength: 100"  position="4 5 -2" radius="0.5" color="orange"></a-sphere>
+        <a-barracks p-position="5 3 10"></a-barracks>
+
+        <a-drop p-position="0 0 0"></a-drop>
+        <a-drop p-position="2 5 -3"></a-drop>
+        <a-drop p-position="4 5 -2"></a-drop>
     
-
-
 
 
       
