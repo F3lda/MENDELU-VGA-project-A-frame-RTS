@@ -175,20 +175,20 @@ AFRAME.registerComponent('cam', {
 
             const units = Array.from(document.querySelectorAll('.selectable'));
             units.forEach((unit) => {
-            const worldPos = unit.object3D.getWorldPosition(new THREE.Vector3());
-            const screenPos = worldToScreen(worldPos, sceneEl.camera);			
+                const worldPos = unit.object3D.getWorldPosition(new THREE.Vector3());
+                const screenPos = worldToScreen(worldPos, sceneEl.camera);			
 
-            if (
-                screenPos.x >= rect.left &&
-                screenPos.x <= rect.right &&
-                screenPos.y >= rect.top &&
-                screenPos.y <= rect.bottom
-            ) {
-                selectedUnits.push(unit);
-                unit.components["character"].changeSelection(true);
-            } else {
-                unit.components["character"].changeSelection(false);
-            }
+                if (
+                    screenPos.x >= rect.left &&
+                    screenPos.x <= rect.right &&
+                    screenPos.y >= rect.top &&
+                    screenPos.y <= rect.bottom
+                ) {
+                    selectedUnits.push(unit);
+                    unit.components["character"].changeSelection(true);
+                } else {
+                    unit.components["character"].changeSelection(false);
+                }
             });
 
             console.log('Selected units:', selectedUnits);

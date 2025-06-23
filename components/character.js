@@ -3,7 +3,7 @@ AFRAME.registerComponent('character', {
         //destPoint: {default: null}
         health: {type: 'int', default: 100},
         damage: {type: 'int', default: 30},
-        attackTime: {type: 'int', default: 1000} //ms
+        attackTime: {type: 'int', default: 2000} //ms
     },
     init() {
 
@@ -467,7 +467,7 @@ AFRAME.registerComponent('character', {
 
 
 
-        if (this.characterModelName.includes("#soldier")) {// only soldiers can attack
+        if (this.characterModelName.includes("#soldier") && this.attacking == false) {// only soldiers can attack
 
             // Get current entity's world position
             const currentPosition = new THREE.Vector3();
@@ -515,7 +515,11 @@ AFRAME.registerComponent('character', {
                 clip: 'CharacterArmature|Death',
                 crossFadeDuration: 0.2,
             });
+            
+            this.el.sceneEl.components["gamemode"].deathUpdate();
+
             setTimeout(() => this.el.remove(), 500);
+
         }
     },
     changeSelection(selected) {
@@ -616,11 +620,18 @@ AFRAME.registerComponent('character', {
                     clip: _this.animationAttack,
                     crossFadeDuration: 0.2,
                 });
-                // start the character's animation
+                /*// start the character's animation
                 _this.characterModel.setAttribute('animation-mixer', {
                     clip: _this.animationIdle,
                     crossFadeDuration: 0.2,
-                });
+                });*/
+                setTimeout(function () {
+                    // start the character's animation
+                    _this.characterModel.setAttribute('animation-mixer', {
+                        clip: _this.animationIdle,
+                        crossFadeDuration: 0.2,
+                    });
+                }, 500);
 
             }, (this.attackLastDirection == direction) ? 1 : 500); // rotation time
             this.attackLastDirection = direction;

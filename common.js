@@ -1,3 +1,4 @@
 
 
-window.materials = 1000;
+window.materials = 300;
+window.gameover = false;

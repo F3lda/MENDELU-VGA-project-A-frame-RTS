@@ -2,7 +2,7 @@ AFRAME.registerPrimitive('a-bulldozer', {
     defaultComponents: {
         'a-primitive': {data: `
             <!-- bulldozer -->
-            <a-entity character class="selectable" ammo-body="type: dynamic; angularFactor: 0 0 0; mass: 40; emitCollisionEvents: true;" position="-12 5 -8" scale="0.1 0.1 0.1" rotation="0 0 0">
+            <a-entity ammo-body="type: dynamic; angularFactor: 0 0 0; mass: 40; emitCollisionEvents: true;" position="-12 5.5 -8" scale="0.1 0.1 0.1" rotation="0 0 0">
                 <a-entity gltf-model="#buldoz" log-gltf-animations ammo-shape="type: hull;" position="0 -5 0" rotation="0 0 0" scale="1 1 1"></a-entity>
                 
                 <!-- Health bar group, positioned above the object -->

@@ -64,13 +64,13 @@ AFRAME.registerComponent('bullet', {
         // movement
         const intrvl = setInterval(() => {
             pos.add(this.data.dir)
-        }, 20);
+        }, 1);
 
         // Clean up bullet after timeout if no hit
         setTimeout(() => {
             if (bullet.parentNode) bullet.remove();
             clearInterval(intrvl);
-        }, 2000);
+        }, 1900);
     }
 });
 /*

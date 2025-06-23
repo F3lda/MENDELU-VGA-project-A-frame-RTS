@@ -27,7 +27,7 @@ AFRAME.registerComponent('base-garage', {
         
         document.addEventListener('mouseup', (event) => {
             console.log("mouseup GARAGE");
-            if (objectClicked) { // show popup
+            if (objectClicked && window.gameover == false) { // show popup
                 preparePopUpUI();
                 document.getElementById("base-garage-popup").style.display = "block";
             } else if (event.target.closest("#base-garage-popup") == null) { // close only when clicked outside

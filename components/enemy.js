@@ -3,7 +3,7 @@ AFRAME.registerComponent('enemy', {
         //destPoint: {default: null}
         health: {type: 'int', default: 100},
         damage: {type: 'int', default: 15},
-        attackTime: {type: 'int', default: 1000} //ms
+        attackTime: {type: 'int', default: 2000} //ms
     },
     init() {
         this.attacking = false;
@@ -18,7 +18,7 @@ AFRAME.registerComponent('enemy', {
     tick() {
         
 
-        if (this.characterModelName.includes("#enemy")) {// only enemy can attack
+        if (this.characterModelName.includes("#enemy") && this.attacking == false) {// only enemy can attack
 
             // Get current entity's world position
             const currentPosition = new THREE.Vector3();
@@ -66,6 +66,9 @@ AFRAME.registerComponent('enemy', {
                 clip: 'CharacterArmature|Death',
                 crossFadeDuration: 0.2,
             });
+            
+            this.el.sceneEl.components["gamemode"].deathUpdate();
+
             setTimeout(() => this.el.remove(), 500);
 
             // drop
@@ -91,6 +94,7 @@ AFRAME.registerComponent('enemy', {
             
             scene.appendChild(bullet);
             console.log(bullet);
+
         }
     },
     attackEnemy(target) {
@@ -180,11 +184,19 @@ AFRAME.registerComponent('enemy', {
                     clip: _this.animationAttack,
                     crossFadeDuration: 0.2,
                 });
-                // start the character's animation
+                /*// start the character's animation
                 _this.characterModel.setAttribute('animation-mixer', {
                     clip: _this.animationIdle,
                     crossFadeDuration: 0.2,
-                });
+                });*/
+                setTimeout(function () {
+                    // start the character's animation
+                    _this.characterModel.setAttribute('animation-mixer', {
+                        clip: _this.animationIdle,
+                        crossFadeDuration: 0.2,
+                    });
+                }, 500);
+                
 
             }, (this.attackLastDirection == direction) ? 1 : 500); // rotation time
             this.attackLastDirection = direction;

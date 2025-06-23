@@ -2,7 +2,7 @@ AFRAME.registerPrimitive('a-enemy', {
     defaultComponents: {
         'a-primitive': {data: `
             <!-- Enemy -->
-            <a-entity enemy ammo-body="type: dynamic; angularFactor: 0 0 0; mass: 20; emitCollisionEvents: true;" position="-2 5 15" scale="0.8 0.8 0.8">
+            <a-entity hide-when-far="distance: 13" enemy ammo-body="type: dynamic; angularFactor: 0 0 0; mass: 20; emitCollisionEvents: true;" position="-2 5 15" scale="0.8 0.8 0.8">
                 <a-entity class="clickable target" gltf-model="#enemy" log-gltf-animations ammo-shape="type: hull;" animation-mixer="clip: CharacterArmature|Idle;" position="0 -1.15 -0.8" rotation="0 0 0" scale="1 1 1"></a-entity>
                 
                 <!-- Health bar group, positioned above the object -->

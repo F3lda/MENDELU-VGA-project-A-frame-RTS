@@ -27,7 +27,7 @@ AFRAME.registerComponent('barracks', {
         
         document.addEventListener('mouseup', (event) => {
             console.log("mouseup GARAGE");
-            if (objectClicked) { // show popup
+            if (objectClicked && window.gameover == false) { // show popup
                 preparePopUpUI();
                 document.getElementById("barracks-popup").style.display = "block";
             } else if (event.target.closest("#barracks-popup") == null) { // close only when clicked outside
