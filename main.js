@@ -13,6 +13,8 @@ import './primitives/a-barracks'
 import './primitives/a-base-garage'
 import './components/a-primitive'
 import './components/dumptruck'
+import './components/base-garage'
+import './components/barracks'
 import './components/character'
 import './components/bullet'
 //import './components/old/obstacle'
@@ -31,6 +33,20 @@ import './shaders/glowing'
 
 document.querySelector('#app').innerHTML = `
     <div id="selectionBox"></div>
+
+    <div id="base-garage-popup" class="popup noselect">
+        <div>BASE & GARAGE</div><br>
+        <div>Dumptrucks</div>
+        <span>-</span> <span>1</span> <span>+</span>
+        <progress value="0" max="100"></progress>
+    </div>
+    <div id="barracks-popup" class="popup noselect">
+        <div>BARRACKS</div><br>
+        <div>Soldiers</div>
+        <span>-</span> <span>1</span> <span>+</span>
+        <progress value="0" max="100"></progress>
+    </div>
+    <div id="materials">Materials: <span>1000</span></div>
 
     <a-scene physics="driver: ammo; debug: true; debugDrawMode: 1;">
 
@@ -84,11 +100,16 @@ document.querySelector('#app').innerHTML = `
 
 
         <a-barracks p-position="-25 0 -15"></a-barracks>
-        <a-base-garage p-position="-12 0 -15"></a-base-garage>
-        <a-silo p-position="-17 0 -15"></a-silo>
+        <a-base-garage p-position="-12 0 -18"></a-base-garage>
+        <a-silo p-position="-19 0 -15"></a-silo>
 
-        <a-drop p-position="0 0 0"></a-drop>
+        <a-drop drop="size: 50" p-position="0 0 0"></a-drop>
         <a-drop p-position="2 0 -3"></a-drop>
+        <a-drop p-position="4 0 -2"></a-drop>
+        <a-drop p-position="4 0 -2"></a-drop>
+        <a-drop p-position="4 0 -2"></a-drop>
+        <a-drop p-position="4 0 -2"></a-drop>
+        <a-drop p-position="4 0 -2"></a-drop>
         <a-drop p-position="4 0 -2"></a-drop>
     
 

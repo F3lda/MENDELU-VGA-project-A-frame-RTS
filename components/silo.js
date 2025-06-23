@@ -5,7 +5,13 @@ AFRAME.registerComponent('silo', {
     init: function () {
         this.el.addEventListener('raycaster-intersection', event => {
             console.log('Silo hit something! intersection', event.detail.els);
-            console.log(event.detail.els[0]);
+            //console.log(event.detail.els[0]);
+
+            const elem = event.detail.els[0].parentElement;
+            if (elem.hasAttribute("dumptruck")) {
+                console.log(elem);
+                elem.components["dumptruck"].empty();
+            }
 /*
             try {
             event.detail.els.forEach((item) => {
@@ -33,51 +39,5 @@ AFRAME.registerComponent('silo', {
         });
 
 
-        // This will be called after the entity has properly attached and loaded.
-       /* const bullet = this.el;
-        // first move
-        console.log("bullet out! "+this.data.attacker);
-        const pos = bullet.getAttribute('position')
-        pos.add(this.data.dir)
-*/
-
-        /*bullet.addEventListener("collide", (e) => {
-            console.log("bullet collision");
-            const hitEl = e.detail.body.el;
-
-            if (hitEl && hitEl.classList.contains("target")) {
-                hitEl.setAttribute("color", "black"); // hit response
-                //setTimeout(() => hitEl.remove(), 500); // remove after hit
-            }
-            //bullet.remove(); // Remove bullet after collision
-            setTimeout(() => bullet.remove(), 1);
-        });
-        
-        bullet.addEventListener("collisions", (e)=>{
-            // collision!
-            console.log("bullet collision 2");
-        })*/
-        /*
-        // /movement
-        const intrvl = setInterval(() => {
-            pos.add(this.data.dir)
-        }, 20);
-
-        // Clean up bullet after timeout if no hit
-        setTimeout(() => {
-            if (bullet.parentNode) bullet.remove();
-            clearInterval(intrvl);
-        }, 2000);*/
     }
 });
-/*
-AFRAME.registerComponent('bullet-collider-check', {
-    dependencies: ['raycaster'],
-
-    init() {
-        this.el.addEventListener('raycaster-intersection', event => {
-            console.log('Bullet hit something! intersection', event.detail.els);
-        });
-    }
-});
-*/

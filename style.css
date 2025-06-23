@@ -20,17 +20,40 @@ body, #app {
   justify-content: center;
 }
 
-#game-over {
+.popup > div:first-child {
+  background-color: #00f;
+}
+.popup {
   position: fixed;
   z-index: 2;
   display: none;
-  background: rgba(255, 0, 0, 0.5);
+  background: rgba(255, 0, 0, 0.8);
   color: white;
   font-size: 3em;
-  padding: 3em;
-  border-radius: 10%;
+  padding: 2em;
+  border-radius: 30px;
 }
 
+#materials {
+  z-index: 3;
+  position: absolute;
+  top: 0.25rem;
+  left: 0.25rem;
+  font-size: 2em;
+  color: white;
+  border: 2px dashed blue;
+  padding: 5px;
+}
+
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+}
 
 body {
   margin: 0;

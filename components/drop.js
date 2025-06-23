@@ -29,6 +29,8 @@ AFRAME.registerComponent('drop', {
             console.log(maxPick);
 
             const pickedUp = Math.min(this.data.size, maxPick);
+            console.log(pickedUp);
+            console.log(this.data.size);
             el.addDump(pickedUp);
             this.data.size -= pickedUp;
 

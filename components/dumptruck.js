@@ -64,5 +64,19 @@ AFRAME.registerComponent('dumptruck', {
         }
 
         updateHealthBar(this.data.full, this.el.querySelector('#dump-bar'))
+    },
+    empty() {
+        window.materials += this.data.full;
+        document.querySelector("#materials > span").innerHTML = window.materials;
+        
+        this.data.full = 0;
+
+        function updateHealthBar(healthPercent, healthBar) {
+            let scale = healthPercent / 100;
+            healthBar.setAttribute('scale', `${scale} 1 1`);
+            healthBar.setAttribute('position', `${-(1 - scale) / 2} 0 0.01`);
+        }
+
+        updateHealthBar(this.data.full, this.el.querySelector('#dump-bar'))
     }
 });

@@ -90,6 +90,7 @@ AFRAME.registerComponent('enemy', {
             bullet.setAttribute('drop', {size: 20});
             
             scene.appendChild(bullet);
+            console.log(bullet);
         }
     },
     attackEnemy(target) {
