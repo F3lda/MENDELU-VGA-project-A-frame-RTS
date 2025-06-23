@@ -46,7 +46,7 @@ document.querySelector('#app').innerHTML = `
             <a-asset-item id="antena" src="/models/Buildings/Base/Radio_tower.glb"></a-asset-item>
             <a-asset-item id="silo_water" src="/models/Buildings/Silo/Water_Tank.glb"></a-asset-item>
             <a-asset-item id="silo_container" src="/models/Buildings/Silo/Container_Small.glb"></a-asset-item>
-            <a-asset-item id="barracks" src="/models/Buildings/Barracks/Large_building_2.glb"></a-asset-item>
+            <a-asset-item id="barracks" src="/models/Buildings/Barracks/Large_Building.glb"></a-asset-item>
             <a-asset-item id="terrain" src="/models/t.glb"></a-asset-item>
             <img src="/models/grass.jpg" id="grass">
             <img src="/models/asteroid.jpg" id="ball">
@@ -68,29 +68,28 @@ document.querySelector('#app').innerHTML = `
 
         <!-- Environment -->
         <!--  sky    --> <a-sky src="#sky"></a-sky>
-        <!--  tree   --> <a-entity ammo-body="type: static;" ammo-shape="type: box" gltf-model="#tree" position="2.9 -1.9 -7" scale="0.2 0.2 0.2"></a-entity> 
-        <!-- ground  --> <a-entity class="clickable" gltf-model="#terrain" id=terrain2 ammo-body="type: static;" ammo-shape="type: mesh" position="0 -4 -4"></a-entity>
-        <!-- ground2 --> <a-box class="clickable" id="terrain3" ammo-body="type: static;" ammo-shape="type: mesh" position="0 -4 -4" width="130" height="1" depth="130" material="src: #grass; repeat: 5 5;" shadow="receive: true"></a-box> 
+        <!--  tree   --> <a-entity ammo-body="type: static;" ammo-shape="type: box" gltf-model="#tree" position="2.9 -0.1 -13" scale="0.2 0.2 0.2"></a-entity> 
+        <!-- ground  --> <a-entity class="clickable" gltf-model="#terrain" id=terrain2 ammo-body="type: static;" ammo-shape="type: mesh" position="0 -2.1 -10"></a-entity>
+        <!-- ground2 --> <a-box class="clickable" id="terrain3" ammo-body="type: static;" ammo-shape="type: box" position="0 -1.5 -4" width="130" height="1" depth="130" material="src: #grass; repeat: 5 5;" shadow="receive: true"></a-box> 
         <a-box color="red" position="0 0 0" depth="1" height="2" width="1"></a-box>
 
 
         
-        <a-character p-position="-2 5 -3"></a-character>
-        <a-character p-position="-5 5 -3"></a-character>
-        <a-enemy p-position="-2 5 15"></a-enemy>
+        <a-character p-position="-2 0 -3"></a-character>
+        <a-character p-position="-5 0 -3"></a-character>
+        <a-enemy p-position="-2 0 15"></a-enemy>
 
-        <a-dumptruck p-position="-10 5 -3"></a-dumptruck>
-        <a-bulldozer p-position="-12 5 -8"></a-bulldozer>
+        <a-dumptruck p-position="-10 0 -3"></a-dumptruck>
+        <a-bulldozer p-position="-12 0 -8"></a-bulldozer>
 
 
-        <a-base-garage p-position="-12 0 5"></a-base-garage>
-        <a-silo p-position="-17 -2 5"></a-silo>
-
-        <a-barracks p-position="5 3 10"></a-barracks>
+        <a-barracks p-position="-25 0 -15"></a-barracks>
+        <a-base-garage p-position="-12 0 -15"></a-base-garage>
+        <a-silo p-position="-17 0 -15"></a-silo>
 
         <a-drop p-position="0 0 0"></a-drop>
-        <a-drop p-position="2 5 -3"></a-drop>
-        <a-drop p-position="4 5 -2"></a-drop>
+        <a-drop p-position="2 0 -3"></a-drop>
+        <a-drop p-position="4 0 -2"></a-drop>
     
 
 

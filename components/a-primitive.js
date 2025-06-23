@@ -1,7 +1,8 @@
 AFRAME.registerComponent('a-primitive', {
     schema:{
         position: {type: 'vec3', default: '0 0 0'},
-        data: {type: 'string', default: ''}
+        data: {type: 'string', default: ''},
+        origin: {type: 'vec3', default: '0 0 0'}
     },
     init: function() {
         function createElementFromHTML(htmlString) {
@@ -11,13 +12,18 @@ AFRAME.registerComponent('a-primitive', {
         }
 
         let element = createElementFromHTML(this.data.data);
-console.log(element)
+
         this.el.innerHTML = element.innerHTML;
         if (element.hasAttributes()) {
             for (const attr of element.attributes) {
                 this.el.setAttribute(attr.name, attr.value);
             }
         }
-        this.el.setAttribute('position', this.data.position);
+        
+        var originPosition = new THREE.Vector3();
+        originPosition = this.data.position;
+        originPosition.y += this.data.origin.y;
+        this.el.setAttribute('position', originPosition);
+        //this.el.setAttribute('position', this.data.position);
     }
 });

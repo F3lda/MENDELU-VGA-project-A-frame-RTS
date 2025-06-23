@@ -1,6 +1,6 @@
 AFRAME.registerPrimitive('a-silo', {
     defaultComponents: {
-        'a-primitive': {data: `
+        'a-primitive': {origin: '0 0.5 0', data: `
             <!-- silo -->
             <a-entity scale="0.8 0.8 0.8">
                 <a-entity ammo-body="type: static; angularFactor: 0 0 0; mass: 40; emitCollisionEvents: true;" position="0 1.7 0" scale="1 1 1" rotation="0 0 0">
