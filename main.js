@@ -34,7 +34,18 @@ import './shaders/glowing'
 
 
 document.querySelector('#app').innerHTML = `
-    <div id="overlay" onclick="document.getElementById('overlay').style.display = 'none';">Click to Start</div>
+    <div id="overlay" onclick="document.getElementById('overlay').style.display = 'none';">
+        <div>
+            How to play<br>
+            - select units by left mouse button down and movement<br>
+            - right mouse button click to move selected units<br>
+            - left mouse button click to unselect units<br>
+            - click on the barracks and create new soldiers<br>
+            - click on the garage and create new dumptrucks<br>
+            - use dumptrucks to collect materials and unload them in the silo
+            <br><br><br><br><br>CLICK TO START
+        </div>
+    </div>
 
     <div id="selectionBox"></div>
 
