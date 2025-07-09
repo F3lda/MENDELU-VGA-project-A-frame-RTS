@@ -1,6 +1,6 @@
-# MENDELU VGA RTS Game
+# RTS Game example in A-Frame framework
 
-A 3D Real-Time Strategy game built with A-frame for the VGA (Computer Graphics subject) project at Mendel University.
+A 3D Real-Time Strategy game built with A-Frame framework. This web-based RTS game demonstrates 3D graphics programming concepts including unit management, resource collection, and real-time strategy mechanics, all rendered in an 3D environment accessible through any modern web browser.
 
 ## 🎮 How to Play
 
